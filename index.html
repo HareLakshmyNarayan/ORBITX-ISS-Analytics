@@ -1121,10 +1121,10 @@ function updateGlobeMarkers() {
     .pointColor(d => d.color)
 
     .pointRadius(d =>
-      d.type === 'live' ? 0.48 : 0.32
+      d.type === 'live' ? 1.1 : 0.32
     )
 
-    .pointAltitude(0.035)
+    .pointAltitude(0.05)
 
     .pointLabel(d => d.name);
 
@@ -1134,25 +1134,24 @@ function updateGlobeMarkers() {
   if (lastLiveData) {
 
     globe
-      .ringsData([
-        {
-          lat: lastLiveData.latitude,
-          lng: lastLiveData.longitude
-        }
-      ])
+  .ringsData([
+    {
+      lat: lastLiveData.latitude,
+      lng: lastLiveData.longitude
+    },
+    {
+      lat: lastLiveData.latitude,
+      lng: lastLiveData.longitude
+    }
+  ])
 
-      .ringLat(d => d.lat)
-
-      .ringLng(d => d.lng)
-
-      .ringColor(() => '#ff4545')
-
-      .ringMaxRadius(3)
-
-      .ringPropagationSpeed(2)
-
-      .ringRepeatPeriod(1000);
-
+  .ringLat(d => d.lat)
+  .ringLng(d => d.lng)
+  .ringColor(() => '#ff2020')
+  .ringMaxRadius(5)
+  .ringPropagationSpeed(1.5)
+  .ringRepeatPeriod(1600)
+  .ringResolution(128);
   }
 
 
