@@ -145,6 +145,23 @@ footer {
   <div class="card">
     <h2>Earth & Orbital Visualization 🌍</h2>
     <div id="globeViz"></div>
+    
+<div id="liveISS" style="
+  margin-top:15px;
+  padding:15px;
+  background:#142a43;
+  border-radius:10px;
+  color:#48dfff;
+  line-height:2;
+">
+  <h3>🛰️ LIVE ISS TELEMETRY</h3>
+  <p id="issStatus">Connecting to ISS...</p>
+  <p id="issLat">Latitude: Loading...</p>
+  <p id="issLon">Longitude: Loading...</p>
+  <p id="issAlt">Altitude: Loading...</p>
+  <p id="issSpeed">Velocity: Loading...</p>
+</div>
+
     <p style="color:#8199b7;margin-top:12px;font-size:12px">
       Illustrative orbital path, not live ISS positioning.
     </p>
@@ -232,6 +249,7 @@ new Chart(document.getElementById('orbitChart'), {
   }
 });
 
+/
 // 3D Earth globe
 
 const globe = Globe();
@@ -245,13 +263,12 @@ globe(document.getElementById('globeViz'))
   .atmosphereColor('#48aaff')
   .atmosphereAltitude(0.18);
 
-// Create an illustrative inclined orbital path
+// Create illustrative orbital path
 
 const inclination = 51.632 * Math.PI / 180;
-
 const orbitPoints = [];
 
-for(let i=0;i<=360;i++) {
+for (let i = 0; i <= 360; i++) {
   const angle = i * Math.PI / 180;
 
   const x = Math.cos(angle);
@@ -259,9 +276,9 @@ for(let i=0;i<=360;i++) {
   const z = Math.sin(angle) * Math.sin(inclination);
 
   const lat = Math.asin(z) * 180 / Math.PI;
-  const lng = Math.atan2(y,x) * 180 / Math.PI;
+  const lng = Math.atan2(y, x) * 180 / Math.PI;
 
-  orbitPoints.push({lat,lng});
+  orbitPoints.push({lat, lng});
 }
 
 globe
@@ -270,14 +287,92 @@ globe
   .pathPointLat(p => p.lat)
   .pathPointLng(p => p.lng)
   .pathColor(() => '#48dfff')
-  .pathStroke(0.6)
-  .pathDashLength(0.03)
-  .pathDashGap(0.01)
-  .pathDashAnimateTime(5000);
+  .pathStroke(0.6);
 
-globe.pointOfView({lat:15,lng:0,altitude:2.2},1000);
+// Create telemetry panel if it doesn't exist
 
-</script>
+const globeElement = document.getElementById('globeViz');
+
+let panel = document.getElementById('liveISS');
+
+if (!panel) {
+  panel = document.createElement('div');
+  panel.id = 'liveISS';
+  panel.style.cssText =
+    'background:#142a43;padding:15px;margin-top:15px;border-radius:10px;color:#48dfff;line-height:2';
+
+  globeElement.after(panel);
+}
+
+panel.innerHTML = `
+  <h3>🛰️ LIVE ISS TELEMETRY</h3>
+  <p id="issStatus">Connecting...</p>
+  <p id="issLat">Latitude: Loading...</p>
+  <p id="issLon">Longitude: Loading...</p>
+  <p id="issAlt">Altitude: Loading...</p>
+  <p id="issSpeed">Velocity: Loading...</p>
+`;
+
+// Fetch live ISS location
+
+async function updateISS() {
+  try {
+    const response = await fetch(
+      'https://api.wheretheiss.at/v1/satellites/25544'
+    );
+
+    if (!response.ok) {
+      throw new Error('API connection failed');
+    }
+
+    const data = await response.json();
+
+    // Display live ISS marker
+
+    globe
+      .pointsData([{
+        lat: data.latitude,
+        lng: data.longitude,
+        color: '#ff4545'
+      }])
+      .pointLat(d => d.lat)
+      .pointLng(d => d.lng)
+      .pointAltitude(0.025)
+      .pointRadius(0.7)
+      .pointColor(d => d.color)
+      .pointLabel(() => 'International Space Station');
+
+    document.getElementById('issStatus').textContent =
+      '● LIVE CONNECTION ACTIVE';
+
+    document.getElementById('issLat').textContent =
+      'Latitude: ' + data.latitude.toFixed(4) + '°';
+
+    document.getElementById('issLon').textContent =
+      'Longitude: ' + data.longitude.toFixed(4) + '°';
+
+    document.getElementById('issAlt').textContent =
+      'Altitude: ' + data.altitude.toFixed(2) + ' km';
+
+    document.getElementById('issSpeed').textContent =
+      'Velocity: ' + data.velocity.toFixed(2) + ' km/h';
+
+  } catch (error) {
+    document.getElementById('issStatus').textContent =
+      '● CONNECTION ERROR - RETRYING';
+
+    console.error(error);
+  }
+}
+
+globe.pointOfView(
+  {lat: 0, lng: 0, altitude: 2.2},
+  1000
+);
+
+updateISS();
+setInterval(updateISS, 10000);
+
 
 </body>
 </html>
