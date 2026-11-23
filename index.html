@@ -4,107 +4,280 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ORBITX | ISS Analytics</title>
+<title>ORBITX | Space Analytics</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/globe.gl"></script>
+
 <style>
-* { box-sizing: border-box; }
+* { box-sizing:border-box; margin:0; padding:0; }
+
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #07111f;
-  color: #eaf4ff;
+  background:#050b16;
+  color:#fff;
+  font-family:Arial,sans-serif;
 }
+
 header {
-  padding: 25px;
-  background: #101f35;
-  border-bottom: 1px solid #24415f;
+  padding:25px 35px;
+  background:#101c30;
+  border-bottom:1px solid #24415f;
 }
-header h1 { color: #55d9ff; margin: 0; }
-header p { color: #9eb5cc; }
-main { padding: 25px; max-width: 1200px; margin: auto; }
+
+header h1 {
+  color:#48dfff;
+  letter-spacing:4px;
+}
+
+header p { color:#9bb2ce; margin-top:8px; }
+
+.container { padding:28px; max-width:1450px; margin:auto; }
+
+h2 { margin-bottom:20px; }
+
 .cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
-  gap: 18px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:18px;
+  margin-bottom:25px;
 }
+
 .card {
-  background: #12243b;
-  padding: 22px;
-  border: 1px solid #24415f;
-  border-radius: 12px;
+  background:#101e33;
+  border:1px solid #253d5c;
+  padding:22px;
+  border-radius:13px;
 }
-.card h3 { color: #8ba9c8; }
-.value { font-size: 27px; color: #55d9ff; }
-section { margin-top: 30px; }
-canvas { width: 100%; max-height: 300px; }
-footer { padding: 25px; text-align: center; color: #829bb5; }
+
+.card h3 { color:#9bb2ce; font-size:13px; margin-bottom:15px; }
+
+.value { color:#48dfff; font-size:26px; font-weight:bold; }
+
+.unit { color:#8199b7; font-size:12px; margin-top:8px; }
+
+.layout {
+  display:grid;
+  grid-template-columns:1.5fr 1fr;
+  gap:20px;
+  margin-bottom:22px;
+}
+
+#globeViz {
+  width:100%;
+  height:480px;
+  overflow:hidden;
+  border-radius:12px;
+  background:#071426;
+}
+
+.chart {
+  height:280px;
+  position:relative;
+}
+
+.insight {
+  background:#142a43;
+  border-left:3px solid #48dfff;
+  padding:15px;
+  margin-top:12px;
+  border-radius:5px;
+  color:#b9cee4;
+  line-height:1.6;
+}
+
+.status { color:#54e6a0; }
+
+footer {
+  text-align:center;
+  color:#8199b7;
+  padding:25px;
+}
+
+@media(max-width:800px) {
+  .layout { grid-template-columns:1fr; }
+  #globeViz { height:350px; }
+  .container { padding:15px; }
+}
 </style>
 </head>
+
 <body>
+
 <header>
   <h1>ORBITX 🛰️</h1>
-  <p>International Space Station | Orbital Analytics</p>
+  <p>International Space Station | Orbital Intelligence Platform</p>
 </header>
 
-<main>
-  <h2>Mission Overview</h2>
-  <div class="cards">
-    <div class="card">
-      <h3>Object Name</h3>
-      <div class="value">ISS ZARYA</div>
+<div class="container">
+
+<h2>Mission Overview</h2>
+
+<div class="cards">
+
+  <div class="card">
+    <h3>SPACE OBJECT</h3>
+    <div class="value">ISS ZARYA</div>
+    <div class="unit">International Space Station</div>
+  </div>
+
+  <div class="card">
+    <h3>ECCENTRICITY</h3>
+    <div class="value">0.00074255</div>
+    <div class="unit">Nearly circular orbit</div>
+  </div>
+
+  <div class="card">
+    <h3>INCLINATION</h3>
+    <div class="value">51.632°</div>
+    <div class="unit">Orbital inclination</div>
+  </div>
+
+  <div class="card">
+    <h3>MEAN MOTION</h3>
+    <div class="value">15.4956</div>
+    <div class="unit">Revolutions per day</div>
+  </div>
+
+</div>
+
+<div class="layout">
+
+  <div class="card">
+    <h2>Earth & Orbital Visualization 🌍</h2>
+    <div id="globeViz"></div>
+    <p style="color:#8199b7;margin-top:12px;font-size:12px">
+      Illustrative orbital path, not live ISS positioning.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Orbital Analytics</h2>
+    <div class="chart">
+      <canvas id="orbitChart"></canvas>
     </div>
-    <div class="card">
-      <h3>Eccentricity</h3>
-      <div class="value">0.00074255</div>
-    </div>
-    <div class="card">
-      <h3>Inclination</h3>
-      <div class="value">51.632°</div>
-    </div>
-    <div class="card">
-      <h3>Mean Motion</h3>
-      <div class="value">15.4956</div>
-      <p>Revolutions / day</p>
+    <div class="insight">
+      <b>Analysis</b><br>
+      The ISS has a nearly circular orbit, with an inclination of approximately 51.6°.
     </div>
   </div>
 
-  <section class="card">
-    <h2>Orbital Parameter Analysis</h2>
-    <canvas id="orbitChart"></canvas>
-    <p>Comparison of the three orbital parameter values.
-    Values are shown in their original units.</p>
-  </section>
+</div>
 
-  <section class="card">
+<div class="layout">
+
+  <div class="card">
     <h2>Mission Insights</h2>
-    <p>• Eccentricity is close to zero, indicating a nearly circular orbit.</p>
-    <p>• Inclination is approximately 51.6 degrees.</p>
-    <p>• Mean motion indicates approximately 15.5 revolutions per day.</p>
-  </section>
-</main>
 
-<footer>ORBITX | ISS Orbital Data Analytics Project</footer>
+    <div class="insight">
+      <b>Eccentricity</b><br>
+      The orbit is very close to circular.
+    </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <div class="insight">
+      <b>Inclination</b><br>
+      The orbital plane is tilted approximately 51.632° relative to the equator.
+    </div>
+
+    <div class="insight">
+      <b>Mean Motion</b><br>
+      Approximately 15.5 revolutions around Earth per day.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Mission Status</h2>
+    <br>
+    <p class="status">● ORBITAL DATA LOADED</p>
+    <br>
+    <p style="color:#9bb2ce;line-height:2">
+      Object: ISS (ZARYA)<br>
+      Analysis: Initial orbital analysis<br>
+      Earth visualization: Enabled<br>
+      Live tracking: Not connected
+    </p>
+  </div>
+
+</div>
+
+</div>
+
+<footer>
+ORBITX | Space Data Science Project | 2026
+</footer>
+
 <script>
+
+// Orbital parameter chart
+
 new Chart(document.getElementById('orbitChart'), {
-  type: 'bar',
-  data: {
-    labels: ['Eccentricity', 'Inclination', 'Mean Motion'],
-    datasets: [{
-      label: 'Orbital values',
-      data: [0.00074255, 51.632, 15.49560282],
-      backgroundColor: ['#55d9ff','#438dff','#8b78ff']
+  type:'bar',
+  data:{
+    labels:['Eccentricity','Inclination','Mean Motion'],
+    datasets:[{
+      label:'Orbital values',
+      data:[0.00074255,51.632,15.49560282],
+      backgroundColor:['#48dfff','#478cff','#a47bff'],
+      borderRadius:8
     }]
   },
-  options: {
-    responsive: true,
-    plugins: { legend: { labels: { color: '#ffffff' } } },
-    scales: {
-      x: { ticks: { color: '#ffffff' } },
-      y: { ticks: { color: '#ffffff' } }
+  options:{
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{labels:{color:'white'}}
+    },
+    scales:{
+      x:{ticks:{color:'white'}},
+      y:{ticks:{color:'white'}}
     }
   }
 });
+
+// 3D Earth globe
+
+const globe = Globe();
+
+globe(document.getElementById('globeViz'))
+  .globeImageUrl(
+    'https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg'
+  )
+  .backgroundColor('#071426')
+  .showAtmosphere(true)
+  .atmosphereColor('#48aaff')
+  .atmosphereAltitude(0.18);
+
+// Create an illustrative inclined orbital path
+
+const inclination = 51.632 * Math.PI / 180;
+
+const orbitPoints = [];
+
+for(let i=0;i<=360;i++) {
+  const angle = i * Math.PI / 180;
+
+  const x = Math.cos(angle);
+  const y = Math.sin(angle) * Math.cos(inclination);
+  const z = Math.sin(angle) * Math.sin(inclination);
+
+  const lat = Math.asin(z) * 180 / Math.PI;
+  const lng = Math.atan2(y,x) * 180 / Math.PI;
+
+  orbitPoints.push({lat,lng});
+}
+
+globe
+  .pathsData([orbitPoints])
+  .pathPoints('length')
+  .pathPointLat(p => p.lat)
+  .pathPointLng(p => p.lng)
+  .pathColor(() => '#48dfff')
+  .pathStroke(0.6)
+  .pathDashLength(0.03)
+  .pathDashGap(0.01)
+  .pathDashAnimateTime(5000);
+
+globe.pointOfView({lat:15,lng:0,altitude:2.2},1000);
+
 </script>
+
 </body>
 </html>
