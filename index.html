@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORBITX | ISS Analytics</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #07111f;
+  color: #eaf4ff;
+}
+header {
+  padding: 25px;
+  background: #101f35;
+  border-bottom: 1px solid #24415f;
+}
+header h1 { color: #55d9ff; margin: 0; }
+header p { color: #9eb5cc; }
+main { padding: 25px; max-width: 1200px; margin: auto; }
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+  gap: 18px;
+}
+.card {
+  background: #12243b;
+  padding: 22px;
+  border: 1px solid #24415f;
+  border-radius: 12px;
+}
+.card h3 { color: #8ba9c8; }
+.value { font-size: 27px; color: #55d9ff; }
+section { margin-top: 30px; }
+canvas { width: 100%; max-height: 300px; }
+footer { padding: 25px; text-align: center; color: #829bb5; }
+</style>
+</head>
+<body>
+<header>
+  <h1>ORBITX 🛰️</h1>
+  <p>International Space Station | Orbital Analytics</p>
+</header>
+
+<main>
+  <h2>Mission Overview</h2>
+  <div class="cards">
+    <div class="card">
+      <h3>Object Name</h3>
+      <div class="value">ISS ZARYA</div>
+    </div>
+    <div class="card">
+      <h3>Eccentricity</h3>
+      <div class="value">0.00074255</div>
+    </div>
+    <div class="card">
+      <h3>Inclination</h3>
+      <div class="value">51.632°</div>
+    </div>
+    <div class="card">
+      <h3>Mean Motion</h3>
+      <div class="value">15.4956</div>
+      <p>Revolutions / day</p>
+    </div>
+  </div>
+
+  <section class="card">
+    <h2>Orbital Parameter Analysis</h2>
+    <canvas id="orbitChart"></canvas>
+    <p>Comparison of the three orbital parameter values.
+    Values are shown in their original units.</p>
+  </section>
+
+  <section class="card">
+    <h2>Mission Insights</h2>
+    <p>• Eccentricity is close to zero, indicating a nearly circular orbit.</p>
+    <p>• Inclination is approximately 51.6 degrees.</p>
+    <p>• Mean motion indicates approximately 15.5 revolutions per day.</p>
+  </section>
+</main>
+
+<footer>ORBITX | ISS Orbital Data Analytics Project</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+new Chart(document.getElementById('orbitChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Eccentricity', 'Inclination', 'Mean Motion'],
+    datasets: [{
+      label: 'Orbital values',
+      data: [0.00074255, 51.632, 15.49560282],
+      backgroundColor: ['#55d9ff','#438dff','#8b78ff']
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { labels: { color: '#ffffff' } } },
+    scales: {
+      x: { ticks: { color: '#ffffff' } },
+      y: { ticks: { color: '#ffffff' } }
+    }
+  }
+});
+</script>
+</body>
+</html>
