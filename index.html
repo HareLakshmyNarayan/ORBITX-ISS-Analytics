@@ -12,6 +12,76 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/satellite.js/5.0.0/satellite.min.js"></script>
 
 <style>
+    /* Your existing CSS above */
+
+/* Reduce spacing in ISS location card */
+.iss-location-card {
+    padding: 16px 18px;
+}
+
+.iss-location-card h3 {
+    margin: 0 0 8px;
+}
+
+.iss-location-card p {
+    margin: 5px 0;
+    padding: 0;
+    line-height: 1.5;
+}
+
+.iss-live {
+    display: inline-block;
+    margin-bottom: 8px;
+}
+
+.iss-location-card strong {
+    display: inline;
+}
+    /* Compact CURRENT and FUTURE ISS location cards */
+.iss-location-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    align-items: start;
+}
+
+.iss-location-card {
+    padding: 16px;
+    height: auto;
+    min-height: 0;
+}
+
+.iss-location-card h3 {
+    margin: 0 0 8px;
+}
+
+.iss-location-card p {
+    margin: 5px 0;
+    padding: 0;
+    line-height: 1.4;
+}
+
+.iss-location-card .future-location {
+    margin: 10px 0;
+    padding: 10px;
+    line-height: 1.4;
+}
+
+.iss-location-card strong {
+    display: inline;
+}
+
+.iss-live {
+    display: inline-block;
+    margin-bottom: 8px;
+}
+
+@media (max-width: 700px) {
+    .iss-location-container {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
 :root {
     --bg: #050b16;
     --panel: #0b1627;
