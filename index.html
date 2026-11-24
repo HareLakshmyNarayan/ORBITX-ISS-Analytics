@@ -561,7 +561,7 @@ main {
       <button class="time-btn" data-min="90">+90 MIN</button>
     </div>
 
-    <input type="range" class="slider" id="futureSlider" min="1" max="90" value="10">
+    <input type="range" class="slider" id="futureSlider" min="0" max="90" value="10">
 
     <div class="future-readout" id="futureReadout">
       Waiting for orbital elements...
@@ -714,6 +714,19 @@ ORBITX · ORBITAL INTELLIGENCE PLATFORM · EDUCATIONAL DATA SCIENCE PROJECT
 </main>
 </div>
 
+  function clearHistory() {
+  if (!confirm("Delete your collected history?")) return;
+
+  historyData = [];
+  saveHistoryData();
+
+  updateHistory();
+  updateChart();
+  updateAnomaly();
+
+  logEvent("History cleared by user");
+}
+  
 <script>
 // ============================================
 // ORBITX — MISSION CONTROL
@@ -723,6 +736,11 @@ const ISS_API = "https://api.wheretheiss.at/v1/satellites/25544";
 const TLE_API = "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=TLE";
 const HISTORY_KEY = "ORBITX_4_HISTORY";
 
+const TLE_CACHE_KEY = "ORBITX_ISS_TLE_CACHE";
+const TLE_CACHE_MAX_AGE = 6 * 60 * 60 * 1000;
+
+let tleLoading = false;
+let futureGeocodeTimer = null;
 let globe;
 let tle;
 let live;
@@ -818,9 +836,10 @@ function initGlobe() {
     .pointsData([])
     .pointLat(d => d.lat)
     .pointLng(d => d.lng)
-    .pointColor(d => d.kind === "future" ? "#ffad55" : "#ff4040")
-    .pointRadius(d => d.kind === "live" ? 0.9 : 0.55)
-    .pointAltitude(0.04)
+    .pointColor(d => d.kind === "future" ? "#ffad55" : "#ff0000")
+.pointRadius(d => d.kind === "live" ? 1.5 : 0.65)
+.pointAltitude(0.08)
+.pointResolution(16)
     .pointLabel(d => d.kind === "live" ? "LIVE ISS" : "FUTURE ISS")
 
     .ringsData([])
@@ -970,61 +989,222 @@ async function updateFutureLocation(lat, lng) {
 // SGP4
 // ============================================
 
-async function loadTLE() {
-  try {
-    const response = await fetch(TLE_API);
-    if (!response.ok) throw new Error("TLE request failed");
-    const text = await response.text();
-    const lines = text.trim().split(/\r?\n/);
+// ============================================
+// SGP4 — FUTURE EARTH PREDICTION
+// ============================================
 
-    const line1 = lines.find(l => l.startsWith("1 "));
-    const line2 = lines.find(l => l.startsWith("2 "));
+function parseTLEText(text) {
+  const lines = text.trim().split(/\r?\n/).map(line => line.trim());
 
-    if (!line1 || !line2) throw new Error("TLE missing");
+  const line1 = lines.find(line => /^1\s+25544\b/.test(line));
+  const line2 = lines.find(line => /^2\s+25544\b/.test(line));
 
-    tle = satellite.twoline2satrec(line1, line2);
-    logEvent("Orbital elements loaded");
-    updateFuture();
-  } catch (error) {
-    el("futureReadout").textContent = "Could not load orbital elements. Live tracking still works.";
-    logEvent("SGP4 prediction unavailable");
-    console.error(error);
+  if (!line1 || !line2) {
+    throw new Error("Valid ISS TLE lines were not found.");
   }
+
+  const satrec = satellite.twoline2satrec(line1, line2);
+
+  if (!satrec || (typeof satrec.error === "number" && satrec.error !== 0)) {
+    throw new Error("ISS TLE could not be parsed by SGP4.");
+  }
+
+  // Verify that the orbital elements can actually produce a position.
+  const testPosition = propagateFromSatrec(satrec, new Date());
+
+  if (!testPosition) {
+    throw new Error("SGP4 returned an invalid ISS position.");
+  }
+
+  return satrec;
 }
 
-function propagate(date) {
-  if (!tle) return null;
+function propagateFromSatrec(satrec, date) {
+  if (!satrec || !date || !Number.isFinite(date.getTime())) {
+    return null;
+  }
 
-  const pv = satellite.propagate(tle, date);
-  if (!pv.position || typeof pv.position === "boolean") return null;
+  const pv = satellite.propagate(
+    satrec,
+    date.getUTCFullYear(),
+    date.getUTCMonth() + 1,
+    date.getUTCDate(),
+    date.getUTCHours(),
+    date.getUTCMinutes(),
+    date.getUTCSeconds() + date.getUTCMilliseconds() / 1000
+  );
+
+  if (!pv || !pv.position || typeof pv.position === "boolean") {
+    return null;
+  }
+
+  const position = pv.position;
+
+  if (
+    !Number.isFinite(position.x) ||
+    !Number.isFinite(position.y) ||
+    !Number.isFinite(position.z)
+  ) {
+    return null;
+  }
 
   const gmst = satellite.gstime(date);
-  const geo = satellite.eciToGeodetic(pv.position, gmst);
+  const geo = satellite.eciToGeodetic(position, gmst);
 
-  return {
+  const result = {
     latitude: satellite.degreesLat(geo.latitude),
     longitude: satellite.degreesLong(geo.longitude),
     altitude: geo.height
   };
+
+  if (
+    !Number.isFinite(result.latitude) ||
+    !Number.isFinite(result.longitude) ||
+    !Number.isFinite(result.altitude)
+  ) {
+    return null;
+  }
+
+  return result;
+}
+
+function propagate(date) {
+  if (!tle) return null;
+  return propagateFromSatrec(tle, date);
+}
+
+async function loadTLE() {
+  if (tleLoading) return;
+
+  tleLoading = true;
+
+  let cached = null;
+
+  try {
+    cached = JSON.parse(localStorage.getItem(TLE_CACHE_KEY));
+  } catch {
+    cached = null;
+  }
+
+  // Reuse previously downloaded orbital elements when still fresh.
+  if (cached && cached.text) {
+    try {
+      if (!tle) {
+        tle = parseTLEText(cached.text);
+      }
+
+      const age = Date.now() - cached.timestamp;
+
+      if (age >= 0 && age < TLE_CACHE_MAX_AGE) {
+        updateFuture();
+        tleLoading = false;
+        return;
+      }
+    } catch (error) {
+      console.warn("Cached TLE is invalid:", error);
+      tle = null;
+    }
+  }
+
+  try {
+    const response = await fetch(TLE_API, {
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+      throw new Error(`CelesTrak HTTP error: ${response.status}`);
+    }
+
+    const text = await response.text();
+
+    if (!text || text.length < 100) {
+      throw new Error("CelesTrak returned incomplete orbital data.");
+    }
+
+    const newSatrec = parseTLEText(text);
+
+    // Replace the active orbital elements only after validation.
+    tle = newSatrec;
+
+    try {
+      localStorage.setItem(TLE_CACHE_KEY, JSON.stringify({
+        text,
+        timestamp: Date.now()
+      }));
+    } catch (storageError) {
+      console.warn("Could not cache TLE:", storageError);
+    }
+
+    logEvent("Latest ISS orbital elements loaded");
+
+    updateFuture();
+
+  } catch (error) {
+    console.error("TLE loading failed:", error);
+
+    if (tle) {
+      el("futureReadout").textContent =
+        "CelesTrak unavailable. Using previously loaded orbital elements.";
+
+      logEvent("Using previously loaded ISS orbital elements");
+      updateFuture();
+    } else {
+      el("futureReadout").textContent =
+        "TLE unavailable: " + error.message +
+        ". Live tracking is still working.";
+
+      logEvent("SGP4 prediction unavailable");
+    }
+
+  } finally {
+    tleLoading = false;
+  }
 }
 
 function updateFuture() {
-  if (!tle) return;
+  if (!tle) {
+    el("futureReadout").textContent =
+      "Waiting for valid ISS orbital elements...";
 
-  const targetDate = new Date(Date.now() + selectedMinutes * 60000);
+    return;
+  }
+
+  const targetDate = new Date(
+    Date.now() + selectedMinutes * 60000
+  );
+
   future = propagate(targetDate);
 
-  if (!future) return;
+  if (!future) {
+    el("futureReadout").textContent =
+      "SGP4 could not calculate this position. Check the orbital elements.";
+
+    el("futurePlace").textContent = "Prediction unavailable";
+    el("futureDetails").textContent = "SGP4 calculation failed";
+    el("futureCoordinates").textContent = "--";
+
+    updateGlobe();
+    return;
+  }
 
   el("snapshotFuture").textContent = `+${selectedMinutes} min`;
 
   el("futureReadout").textContent =
     `+${selectedMinutes} MIN · ` +
-    `LAT ${fmt(future.latitude,4)}° · LNG ${fmt(future.longitude,4)}° · ` +
-    `ALT ${fmt(future.altitude,2)} km · ` +
+    `LAT ${fmt(future.latitude, 4)}° · ` +
+    `LNG ${fmt(future.longitude, 4)}° · ` +
+    `ALT ${fmt(future.altitude, 2)} km · ` +
     `ETA ${targetDate.toLocaleTimeString()}`;
 
-  updateFutureLocation(future.latitude, future.longitude);
+  // Update the geographic name after the user pauses the slider.
+  clearTimeout(futureGeocodeTimer);
+
+  const predictedLat = future.latitude;
+  const predictedLng = future.longitude;
+
+  futureGeocodeTimer = setTimeout(() => {
+    updateFutureLocation(predictedLat, predictedLng);
+  }, 500);
 
   buildOrbit();
   updateGlobe();
@@ -1034,14 +1214,24 @@ function buildOrbit() {
   if (!tle) return;
 
   orbitPath = [];
+
   const now = new Date();
 
-  // Predicted track over the next 100 minutes
-  for (let minute = 0; minute <= 100; minute += 2) {
-    const p = propagate(new Date(now.getTime() + minute * 60000));
-    if (p) orbitPath.push({ lat: p.latitude, lng: p.longitude });
+  // Predict the next 90 minutes in 2-minute intervals.
+  for (let minute = 0; minute <= 90; minute += 2) {
+    const position = propagate(
+      new Date(now.getTime() + minute * 60000)
+    );
+
+    if (position) {
+      orbitPath.push({
+        lat: position.latitude,
+        lng: position.longitude
+      });
+    }
   }
 }
+
 
 // ============================================
 // GLOBE DATA
@@ -1067,9 +1257,8 @@ function updateGlobe() {
   globe.pointsData(points);
 
   globe.ringsData([
-    { lat: live.latitude, lng: live.longitude },
-    { lat: live.latitude, lng: live.longitude }
-  ]);
+  { lat: live.latitude, lng: live.longitude }
+]);
 
   const pastTrack = historyData.slice(-100).map(r => ({
     lat: r.latitude,
@@ -1209,43 +1398,78 @@ function downloadCSV() {
 
 function clearHistory() {
   if (!confirm("Delete your collected history?")) return;
+
   historyData = [];
   saveHistoryData();
+
   updateHistory();
   updateChart();
+  updateAnomaly();
+
   logEvent("History cleared by user");
 }
 
+
 // ============================================
-// ANOMALY DETECTION
+// ORBITAL HEALTH INTELLIGENCE
 // ============================================
 
 function updateAnomaly() {
-  const values = historyData.slice(-50).map(r => r.altitude);
+  const values = historyData
+    .map(r => Number(r.altitude))
+    .filter(Number.isFinite)
+    .slice(-51);
+
+  const status = el("anomalyStatus");
 
   if (values.length < 11) {
-    el("anomalyStatus").textContent =
-      `Building baseline: ${values.length}/11 readings collected. This is experimental statistical monitoring.`;
+    status.className = "alert-box";
+    status.textContent =
+      `Building baseline: ${values.length}/11 readings collected.`;
     return;
   }
 
+  // Use previous readings as the baseline
   const baseline = values.slice(0, -1);
   const latest = values[values.length - 1];
 
-  const mean = baseline.reduce((a,b) => a+b, 0) / baseline.length;
-  const sd = Math.sqrt(baseline.reduce((a,b) => a + (b-mean)**2, 0) / baseline.length);
-  const z = sd ? (latest - mean) / sd : 0;
+  // Calculate mean
+  const mean =
+    baseline.reduce((a, b) => a + b, 0) / baseline.length;
+
+  // Calculate sample standard deviation
+  const variance =
+    baseline.reduce((sum, value) => sum + (value - mean) ** 2, 0)
+    / (baseline.length - 1);
+
+  const sd = Math.sqrt(variance);
   const deviation = latest - mean;
 
-  if (Math.abs(z) > 3 && Math.abs(deviation) > 0.5) {
-    el("anomalyStatus").className = "alert-box warning";
-    el("anomalyStatus").textContent =
-      `Unusual altitude reading. Mean ${mean.toFixed(2)} km; latest ${latest.toFixed(2)} km; Z-score ${z.toFixed(2)}. Not a spacecraft fault diagnosis.`;
-  } else {
-    el("anomalyStatus").className = "alert-box";
-    el("anomalyStatus").textContent =
-      `No unusual altitude reading detected. Mean ${mean.toFixed(2)} km; latest ${latest.toFixed(2)} km; Z-score ${z.toFixed(2)}.`;
+  // Avoid division by zero
+  if (sd < 0.000001) {
+    status.className = "alert-box";
+    status.textContent =
+      `Mean: ${mean.toFixed(3)} km | SD: ${sd.toFixed(4)} km | ` +
+      `Latest: ${latest.toFixed(3)} km | Z-score unavailable.`;
+    return;
   }
+
+  // Calculate Z-score
+  const z = deviation / sd;
+
+  // Detect unusual altitude readings
+  const unusual = Math.abs(z) >= 3 && Math.abs(deviation) >= 0.5;
+
+  status.className = unusual ? "alert-box warning" : "alert-box";
+
+  status.textContent =
+    `${unusual ? "UNUSUAL ALTITUDE READING" : "ALTITUDE NOMINAL"} | ` +
+    `Mean: ${mean.toFixed(3)} km | ` +
+    `SD: ${sd.toFixed(4)} km | ` +
+    `Latest: ${latest.toFixed(3)} km | ` +
+    `Z-score: ${z.toFixed(2)} | ` +
+    `Baseline: ${baseline.length} readings. ` +
+    `Statistical monitoring only, not a spacecraft fault diagnosis.`;
 }
 
 // ============================================
@@ -1355,6 +1579,7 @@ updateClock();
 initGlobe();
 initChart();
 updateHistory();
+updateAnomaly();
 
 fetchISS();
 loadTLE();
