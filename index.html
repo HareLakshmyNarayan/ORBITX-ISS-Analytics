@@ -1089,9 +1089,21 @@ async function loadTLE() {
   // Reuse previously downloaded orbital elements when still fresh.
   if (cached && cached.text) {
     try {
-      if (!tle) {
-        tle = parseTLEText(cached.text);
-      }
+     if (!tle) {
+  el("futureReadout").textContent =
+    "Orbital prediction unavailable. Waiting for ISS orbital data.";
+
+  el("futurePlace").textContent =
+    "Future location unavailable";
+
+  el("futureDetails").textContent =
+    "Waiting for valid orbital elements";
+
+  el("futureCoordinates").textContent =
+    "Latitude: -- | Longitude: --";
+
+  return;
+}
 
       const age = Date.now() - cached.timestamp;
 
