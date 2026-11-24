@@ -1,540 +1,774 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ORBITX | Orbital Intelligence</title>
+<title>ORBITX | Mission Control</title>
 
+<!-- Libraries -->
 <script src="https://unpkg.com/globe.gl"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/satellite.js/5.0.0/satellite.min.js"></script>
 
 <style>
+:root {
+  --bg: #030914;
+  --panel: #08172a;
+  --panel2: #0b1d32;
+  --border: #15324e;
+  --cyan: #39d9ff;
+  --green: #00e6a0;
+  --orange: #ffad55;
+  --text: #e6f3ff;
+  --muted: #7892ad;
+}
+
 * {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 body {
-  background: #030712;
-  color: #e6f1ff;
-  font-family: Inter, Segoe UI, Arial, sans-serif;
-  overflow-x: hidden;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
 }
 
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background:
-    radial-gradient(circle at 20% 20%, #0a2140 0%, transparent 35%),
-    radial-gradient(circle at 80% 70%, #07142c 0%, transparent 40%),
-    #030712;
+button, select {
+  font-family: inherit;
 }
 
-header {
-  padding: 24px 5%;
+.topbar {
+  height: 64px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(0,200,255,0.15);
+  justify-content: space-between;
+  padding: 0 22px;
+  background: #061225;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-.logo {
-  font-size: 28px;
+.brand {
+  font-size: 22px;
   font-weight: 900;
-  letter-spacing: 4px;
-  color: #4ddcff;
+  letter-spacing: 3px;
+  color: var(--cyan);
 }
 
-.logo span {
+.brand span {
   color: white;
 }
 
-.header-status {
-  color: #7bffb2;
-  font-size: 12px;
-  letter-spacing: 1px;
-}
-
-main {
-  max-width: 1500px;
-  margin: auto;
-  padding: 24px;
-}
-
-.section-title {
-  font-size: 18px;
-  letter-spacing: 2px;
-  margin: 25px 0 18px;
-  color: #6ddcff;
-}
-
-.mission-banner {
+.top-info {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 15px;
-  margin-bottom: 25px;
-  padding: 22px;
-  border: 1px solid rgba(0,200,255,0.18);
-  background: rgba(10,20,40,0.7);
-  border-radius: 14px;
-}
-
-.mission-banner h1 {
-  font-size: 25px;
-}
-
-.mission-banner p {
-  color: #91a8c5;
-  margin-top: 8px;
-  font-size: 13px;
-}
-
-.status-pill {
-  background: rgba(0,255,140,0.1);
-  color: #69ffad;
-  border: 1px solid rgba(0,255,140,0.3);
-  padding: 8px 13px;
-  border-radius: 30px;
-  font-size: 11px;
-  align-self: center;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 15px;
-}
-
-.card {
-  background: rgba(9,18,35,0.86);
-  border: 1px solid rgba(0,190,255,0.16);
-  border-radius: 14px;
-  padding: 20px;
-  backdrop-filter: blur(10px);
-  min-width: 0;
-}
-
-.metric-label {
-  color: #8198b5;
-  font-size: 11px;
-  letter-spacing: 1.5px;
-  margin-bottom: 12px;
-}
-
-.metric-value {
-  font-size: 27px;
-  font-weight: 700;
-  color: #f2f8ff;
-}
-
-.metric-unit {
+  align-items: center;
+  gap: 25px;
+  color: var(--muted);
   font-size: 12px;
-  color: #5bd6ff;
-  margin-top: 6px;
 }
 
-.location-card {
-  grid-column: span 2;
-  border-color: rgba(0,220,255,0.35);
-  background: linear-gradient(135deg, rgba(8,30,55,0.95), rgba(9,18,35,0.95));
+.online {
+  color: var(--green);
 }
 
-.location-name {
-  font-size: 23px;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 8px;
-  overflow-wrap: anywhere;
+.layout {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  min-height: calc(100vh - 64px);
 }
 
-.location-detail {
-  color: #8cb8d7;
-  font-size: 14px;
+.sidebar {
+  border-right: 1px solid var(--border);
+  background: #051020;
+  padding: 15px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.nav {
+  padding: 13px;
+  color: #8ba5bf;
+  font-size: 13px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.nav:hover, .nav.active {
+  background: #0d2944;
+  color: var(--cyan);
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding: 15px 8px;
+  font-size: 11px;
+  color: var(--muted);
   line-height: 1.8;
 }
 
-.location-coords {
-  color: #4ddcff;
-  font-family: monospace;
+main {
+  padding: 16px;
+  min-width: 0;
+}
+
+.mission-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 17px;
+  margin-bottom: 14px;
+}
+
+.mission-head h1 {
+  font-size: 19px;
+  margin: 0 0 6px;
+}
+
+.mission-head p {
+  color: var(--muted);
   font-size: 12px;
-  margin-top: 10px;
+  margin: 0;
 }
 
-.future-card {
-  border-color: rgba(255,165,50,0.4);
-  background: linear-gradient(135deg, rgba(45,27,13,0.85), rgba(9,18,35,0.95));
+.status {
+  font-size: 11px;
+  color: var(--green);
+  background: #07372d;
+  border: 1px solid #11644d;
+  padding: 8px 12px;
+  border-radius: 30px;
 }
 
-.future-card .metric-label {
-  color: #ffb75b;
+.dashboard {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr);
+  gap: 14px;
+}
+
+.left-col, .right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 15px;
+  min-width: 0;
+}
+
+.panel-title {
+  font-size: 12px;
+  letter-spacing: 1.2px;
+  color: #a8c6e4;
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.small-muted {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.globe-panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+.globe-top {
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 #globeViz {
-  height: 550px;
   width: 100%;
-  position: relative;
-  overflow: hidden;
-  border-radius: 15px;
+  height: 480px;
   background:
-    radial-gradient(circle at 50% 50%, #142944 0%, #050b18 45%, #01030a 100%);
-  border: 1px solid rgba(0,200,255,0.12);
+    radial-gradient(circle at center, #0c2440, #020711 70%);
 }
 
-/* Decorative starfield */
-#globeViz::before,
-#globeViz::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image:
-    radial-gradient(1px 1px at 12% 22%, #fff, transparent),
-    radial-gradient(1px 1px at 78% 14%, #bdeaff, transparent),
-    radial-gradient(2px 2px at 34% 76%, #fff, transparent),
-    radial-gradient(1px 1px at 91% 62%, #fff, transparent),
-    radial-gradient(1px 1px at 52% 28%, #d6edff, transparent),
-    radial-gradient(2px 2px at 67% 87%, #fff, transparent),
-    radial-gradient(1px 1px at 22% 52%, #bdeaff, transparent),
-    radial-gradient(1px 1px at 86% 36%, #fff, transparent),
-    radial-gradient(1px 1px at 46% 91%, #fff, transparent);
-}
-
-#globeViz canvas {
-  position: relative;
-  z-index: 1;
-}
-
-.globe-caption {
-  text-align: center;
-  color: #617e9c;
+.globe-legend {
+  display: flex;
+  gap: 15px;
+  padding: 12px 15px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
   font-size: 11px;
-  letter-spacing: 2px;
-  padding: 12px;
+  flex-wrap: wrap;
 }
 
-.charts-grid {
+.legend-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.live-dot { background: #ff4343; }
+.future-dot { background: var(--orange); }
+.orbit-dot { background: var(--cyan); }
+
+.telemetry-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  gap: 9px;
 }
 
-.chart-card {
-  min-height: 300px;
-}
-
-.chart-container {
-  height: 230px;
-  position: relative;
-}
-
-.chart-container canvas {
-  width: 100% !important;
-  height: 100% !important;
-}
-
-.history-grid {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  gap: 15px;
-}
-
-.history-number {
-  font-size: 26px;
-  color: #fff;
-  font-weight: 800;
-}
-
-.history-sub {
-  font-size: 12px;
-  color: #7d95b3;
-  margin-top: 8px;
-}
-
-.action-btn {
-  background: #0b203b;
-  color: #63dfff;
-  border: 1px solid rgba(0,200,255,0.3);
-  padding: 10px 15px;
+.metric {
+  background: var(--panel2);
+  padding: 12px;
   border-radius: 8px;
+  border: 1px solid #102b45;
+}
+
+.metric label {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.metric strong {
+  font-size: 21px;
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.metric small {
+  color: var(--cyan);
+  font-size: 10px;
+}
+
+.location-box {
+  border-left: 2px solid var(--cyan);
+  padding-left: 12px;
+  margin-top: 13px;
+}
+
+.location-box.future {
+  border-color: var(--orange);
+}
+
+.location-box h3 {
+  font-size: 15px;
+  margin: 5px 0;
+}
+
+.location-box p {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 5px 0;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.tabs {
+  display: flex;
+  gap: 15px;
+  border-bottom: 1px solid var(--border);
+  margin: -3px 0 14px;
+  overflow-x: auto;
+}
+
+.tab {
+  padding: 9px 2px;
+  font-size: 11px;
+  color: var(--muted);
   cursor: pointer;
-  margin: 8px 8px 0 0;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+
+.tab.active {
+  color: var(--cyan);
+  border-color: var(--cyan);
+}
+
+.chart-wrap {
+  height: 200px;
+}
+
+.prediction-controls {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.time-btn, .action-btn {
+  background: #102944;
+  color: #9bdfff;
+  border: 1px solid #1a4767;
+  border-radius: 6px;
+  padding: 9px 12px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.time-btn:hover, .action-btn:hover {
+  background: #173b5b;
+}
+
+.time-btn.selected {
+  background: #0a435c;
+  border-color: var(--cyan);
+  color: white;
+}
+
+.future-readout {
+  color: var(--orange);
   font-size: 12px;
+  line-height: 1.8;
 }
 
-.action-btn:hover {
-  background: #123456;
+.slider {
+  width: 100%;
+  accent-color: var(--cyan);
+  margin: 14px 0;
 }
 
-.prediction-text {
-  font-family: monospace;
-  color: #9de9ff;
-  line-height: 2;
+.snapshot-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.snapshot-item {
+  background: var(--panel2);
+  padding: 11px;
+  border-radius: 7px;
+}
+
+.snapshot-item label {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  margin-bottom: 6px;
+}
+
+.snapshot-item strong {
   font-size: 13px;
   overflow-wrap: anywhere;
 }
 
-.alert {
-  padding: 12px;
-  margin-top: 10px;
-  border-radius: 8px;
-  font-size: 13px;
-  background: rgba(0,190,255,0.07);
-  color: #9bdcff;
+.daynight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.alert.warning {
-  color: #ffcc7a;
-  background: rgba(255,170,0,0.07);
+.daynight-icon {
+  font-size: 29px;
 }
 
-footer {
-  text-align: center;
-  padding: 35px 15px;
-  color: #455a75;
+.daynight strong {
+  font-size: 14px;
+}
+
+.daynight p {
+  color: var(--muted);
   font-size: 11px;
-  letter-spacing: 1px;
+  margin: 4px 0 0;
 }
 
-@media(max-width:900px) {
-  .grid { grid-template-columns: repeat(2,1fr); }
-  .charts-grid { grid-template-columns: 1fr; }
-  #globeViz { height: 420px; }
+.alert-box {
+  padding: 10px;
+  border-radius: 7px;
+  background: #0b2338;
+  color: #8ddcff;
+  font-size: 11px;
+  line-height: 1.7;
 }
 
-@media(max-width:600px) {
-  main { padding: 14px; }
-  header { padding: 18px; }
-  .grid { grid-template-columns: 1fr 1fr; }
-  .location-card { grid-column: span 2; }
-  .metric-value { font-size: 21px; }
-  .history-grid { grid-template-columns: 1fr 1fr; }
-  #globeViz { height: 350px; }
+.warning {
+  background: #342512;
+  color: #ffc875;
+}
+
+.event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  max-height: 230px;
+  overflow: auto;
+}
+
+.event {
+  font-size: 11px;
+  color: #9cb4cc;
+  border-bottom: 1px solid #11273d;
+  padding-bottom: 8px;
+  line-height: 1.5;
+}
+
+.event time {
+  color: var(--cyan);
+  margin-right: 8px;
+}
+
+.imagery {
+  min-height: 180px;
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(5,15,30,.2), rgba(5,15,30,.7)),
+    url("https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?auto=format&fit=crop&w=1000&q=80")
+    center/cover;
+  display: flex;
+  align-items: end;
+  padding: 12px;
+  color: white;
+  font-size: 11px;
+}
+
+.footer {
+  color: #526b85;
+  text-align: center;
+  font-size: 10px;
+  padding: 25px 0;
+}
+
+@media(max-width:1150px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+  .layout {
+    grid-template-columns: 65px 1fr;
+  }
+  .nav {
+    text-align: center;
+    font-size: 18px;
+    padding: 12px 4px;
+  }
+  .nav span {
+    display: none;
+  }
+  .sidebar-bottom {
+    display: none;
+  }
+}
+
+@media(max-width:650px) {
+  .top-info .global {
+    display: none;
+  }
+  main {
+    padding: 9px;
+  }
+  .mission-head {
+    padding: 12px;
+  }
+  #globeViz {
+    height: 340px;
+  }
+  .metric strong {
+    font-size: 17px;
+  }
+  .telemetry-grid {
+    gap: 7px;
+  }
 }
 </style>
 </head>
 
 <body>
 
-<header>
-  <div class="logo">ORBIT<span>X</span></div>
-  <div class="header-status" id="headerStatus">● SYSTEM STARTING</div>
+<header class="topbar">
+  <div class="brand">ORBIT<span>X</span></div>
+  <div class="top-info">
+    <span>MISSION CONTROL</span>
+    <span class="online" id="onlineStatus">● ONLINE</span>
+    <span id="utcClock">UTC --:--:--</span>
+    <span class="global">GLOBAL TRACKING</span>
+  </div>
 </header>
 
-<main>
+<div class="layout">
 
-<section class="mission-banner">
+<aside class="sidebar">
+  <div class="nav active" data-section="dashboard">▦ <span>Dashboard</span></div>
+  <div class="nav" data-section="tracking">◎ <span>Tracking</span></div>
+  <div class="nav" data-section="future">◷ <span>Future Earth</span></div>
+  <div class="nav" data-section="telemetry">⌁ <span>Telemetry</span></div>
+  <div class="nav" data-section="imagery">▧ <span>Imagery</span></div>
+  <div class="nav" data-section="snapshot">▣ <span>Snapshot</span></div>
+  <div class="nav" data-section="alerts">⚠ <span>Alerts</span></div>
+
+  <div class="sidebar-bottom">
+    <span class="online">● Network connected</span><br>
+    ISS ZARYA · NORAD 25544<br>
+    Data source: WhereTheISS.at
+  </div>
+</aside>
+
+<main id="dashboard">
+
+<div class="mission-head">
   <div>
-    <h1>International Space Station</h1>
-    <p>Orbital Research &amp; Intelligence Platform</p>
+    <h1>ISS ZARYA · Orbital Operations</h1>
+    <p>Earth Observation · Low Earth Orbit · Inclination 51.6°</p>
   </div>
-  <div class="status-pill" id="connectionStatus">CONNECTING...</div>
-</section>
+  <div class="status" id="missionStatus">OPERATIONAL</div>
+</div>
 
-<h2 class="section-title">LIVE TELEMETRY</h2>
+<div class="dashboard">
 
-<section class="grid">
+<!-- LEFT COLUMN -->
+<div class="left-col">
 
-  <div class="card">
-    <div class="metric-label">LATITUDE</div>
-    <div class="metric-value" id="latitude">--</div>
-    <div class="metric-unit">Degrees</div>
-  </div>
-
-  <div class="card">
-    <div class="metric-label">LONGITUDE</div>
-    <div class="metric-value" id="longitude">--</div>
-    <div class="metric-unit">Degrees</div>
-  </div>
-
-  <div class="card">
-    <div class="metric-label">ALTITUDE</div>
-    <div class="metric-value" id="altitude">--</div>
-    <div class="metric-unit">Kilometers</div>
-  </div>
-
-  <div class="card">
-    <div class="metric-label">VELOCITY</div>
-    <div class="metric-value" id="velocity">--</div>
-    <div class="metric-unit">Kilometers / Hour</div>
-  </div>
-
-  <!-- CURRENT LOCATION -->
-  <div class="card location-card">
-    <div class="metric-label">🌍 CURRENT ISS LOCATION</div>
-    <div class="location-name" id="issLocation">Locating ISS...</div>
-    <div class="location-detail" id="issCountry">
-      Finding current geographic location...
+  <!-- EARTH -->
+  <section class="panel globe-panel" id="tracking">
+    <div class="globe-top">
+      <div class="panel-title" style="margin:0">GLOBAL TRACKING</div>
+      <span class="small-muted" id="globeLabel">LIVE ISS POSITION</span>
     </div>
-    <div class="location-coords" id="locationCoords"></div>
-  </div>
-
-  <!-- FUTURE LOCATION -->
-  <div class="card location-card future-card">
-    <div class="metric-label">🧭 PREDICTED LOCATION · +10 MIN</div>
-    <div class="location-name" id="futureLocation">Calculating...</div>
-    <div class="location-detail" id="futureCountry">
-      Predicting future geographic location...
+    <div id="globeViz"></div>
+    <div class="globe-legend">
+      <span><i class="legend-dot live-dot"></i>Current ISS</span>
+      <span><i class="legend-dot future-dot"></i>Future position</span>
+      <span><i class="legend-dot orbit-dot"></i>Predicted track</span>
     </div>
-    <div class="location-coords" id="futureCoords"></div>
-  </div>
+  </section>
 
-  <div class="card">
-    <div class="metric-label">LAST UPDATE</div>
-    <div class="metric-value" id="lastUpdate" style="font-size:18px">--</div>
-    <div class="metric-unit">Live API</div>
-  </div>
-
-</section>
-
-<h2 class="section-title">EARTH &amp; ORBITAL INTELLIGENCE 🌍</h2>
-
-<div id="globeViz"></div>
-<div class="globe-caption">
-  ORBITAL VIEW | LIVE ISS POSITION | ROTATE AND ZOOM
-</div>
-
-<div class="card">
-  <div class="metric-label">ORBIT VISUALIZATION LEGEND</div>
-  <div class="prediction-text">
-    🔴 Red marker — Current ISS position<br>
-    🔴 Pulse rings — Live position beacon<br>
-    🟠 Orange marker — Predicted +10-minute position<br>
-    🔵 Blue line — Predicted orbital trajectory<br>
-    🟡 Trail — Previously collected positions
-  </div>
-</div>
-
-<h2 class="section-title">ALTITUDE MONITORING</h2>
-
-<section class="charts-grid">
-  <div class="card chart-card">
-    <div class="metric-label">ISS ALTITUDE HISTORY (KM)</div>
-    <div class="chart-container"><canvas id="altitudeChart"></canvas></div>
-  </div>
-
-  <div class="card chart-card">
-    <div class="metric-label">ISS VELOCITY HISTORY (KM/H)</div>
-    <div class="chart-container"><canvas id="velocityChart"></canvas></div>
-  </div>
-</section>
-
-<h2 class="section-title">HISTORICAL ISS TRACKING</h2>
-
-<section class="history-grid">
-  <div class="card">
-    <div class="metric-label">SAVED READINGS</div>
-    <div class="history-number" id="recordCount">0</div>
-    <div class="history-sub">Stored locally</div>
-  </div>
-
-  <div class="card">
-    <div class="metric-label">COLLECTION PERIOD</div>
-    <div class="history-number" id="collectionPeriod">0 h</div>
-    <div class="history-sub">Since first reading</div>
-  </div>
-
-  <div class="card">
-    <div class="metric-label">24-HOUR LOCATION</div>
-    <div class="history-number" id="yesterdayLocation" style="font-size:16px">
-      Collecting data
+  <!-- FUTURE EARTH -->
+  <section class="panel" id="future">
+    <div class="panel-title">
+      FUTURE EARTH
+      <span class="small-muted">SGP4 ORBIT PREDICTION</span>
     </div>
-    <div class="history-sub">Requires collected history</div>
-  </div>
-</section>
 
-<button class="action-btn" onclick="downloadCSV()">⬇ EXPORT CSV</button>
-<button class="action-btn" onclick="clearHistory()">🗑 CLEAR HISTORY</button>
+    <div class="prediction-controls">
+      <button class="time-btn selected" data-min="10">+10 MIN</button>
+      <button class="time-btn" data-min="30">+30 MIN</button>
+      <button class="time-btn" data-min="60">+60 MIN</button>
+      <button class="time-btn" data-min="90">+90 MIN</button>
+    </div>
 
-<h2 class="section-title">ORBIT PREDICTION</h2>
+    <input type="range" class="slider" id="futureSlider" min="1" max="90" value="10">
 
-<div class="card">
-  <div class="metric-label">SGP4 ORBIT PROPAGATION</div>
-  <div class="prediction-text" id="predictionStatus">Loading orbital elements...</div>
-  <div class="alert" id="predictionAlert">Waiting for orbital data.</div>
+    <div class="future-readout" id="futureReadout">
+      Waiting for orbital elements...
+    </div>
+  </section>
+
+  <!-- CHARTS -->
+  <section class="panel" id="telemetry">
+    <div class="tabs">
+      <div class="tab active" data-chart="altitude">Altitude</div>
+      <div class="tab" data-chart="velocity">Velocity</div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="telemetryChart"></canvas>
+    </div>
+  </section>
+
+  <!-- HISTORY -->
+  <section class="panel">
+    <div class="panel-title">ORBITAL HISTORY</div>
+    <div class="snapshot-grid">
+      <div class="snapshot-item">
+        <label>COLLECTED READINGS</label>
+        <strong id="readingCount">0</strong>
+      </div>
+      <div class="snapshot-item">
+        <label>COLLECTION TIME</label>
+        <strong id="collectionTime">0 min</strong>
+      </div>
+    </div>
+    <button class="action-btn" onclick="downloadCSV()">EXPORT CSV</button>
+    <button class="action-btn" onclick="clearHistory()">CLEAR HISTORY</button>
+  </section>
+
 </div>
 
-<h2 class="section-title">AI &amp; ANOMALY DETECTION</h2>
+<!-- RIGHT COLUMN -->
+<div class="right-col">
 
-<div class="card">
-  <div class="metric-label">STATISTICAL ALTITUDE MONITOR</div>
-  <div class="prediction-text" id="anomalyStatus">Collecting baseline data...</div>
-  <div class="alert" id="anomalyAlert">Anomaly analysis requires at least 11 readings.</div>
+  <!-- TELEMETRY -->
+  <section class="panel">
+    <div class="panel-title">TELEMETRY</div>
+
+    <div class="telemetry-grid">
+      <div class="metric">
+        <label>ALTITUDE</label>
+        <strong id="altitude">--</strong>
+        <small>km</small>
+      </div>
+      <div class="metric">
+        <label>VELOCITY</label>
+        <strong id="velocity">--</strong>
+        <small>km/h</small>
+      </div>
+      <div class="metric">
+        <label>LATITUDE</label>
+        <strong id="latitude">--</strong>
+        <small>degrees</small>
+      </div>
+      <div class="metric">
+        <label>LONGITUDE</label>
+        <strong id="longitude">--</strong>
+        <small>degrees</small>
+      </div>
+    </div>
+
+    <div class="location-box">
+      <span class="small-muted">CURRENT LOCATION</span>
+      <h3 id="currentPlace">Locating ISS...</h3>
+      <p id="currentDetails">Reverse-geocoding live coordinates</p>
+      <p id="currentCoordinates">--</p>
+    </div>
+
+    <div class="location-box future">
+      <span class="small-muted">FUTURE LOCATION</span>
+      <h3 id="futurePlace">Calculating...</h3>
+      <p id="futureDetails">Predicted geographic region</p>
+      <p id="futureCoordinates">--</p>
+    </div>
+  </section>
+
+  <!-- DAY / NIGHT -->
+  <section class="panel">
+    <div class="panel-title">DAY / NIGHT TRACKING</div>
+    <div class="daynight">
+      <div class="daynight-icon" id="dayIcon">🌍</div>
+      <div>
+        <strong id="dayStatus">Calculating sunlight</strong>
+        <p id="dayDescription">Using estimated solar position</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ANOMALY MONITOR -->
+  <section class="panel" id="alerts">
+    <div class="panel-title">ORBITAL HEALTH INTELLIGENCE</div>
+    <div id="anomalyStatus" class="alert-box">
+      Collecting baseline readings...
+    </div>
+  </section>
+
+  <!-- IMAGERY -->
+  <section class="panel" id="imagery">
+    <div class="panel-title">EARTH IMAGERY</div>
+    <div class="imagery">
+      <div>
+        <strong>Earth from Orbit</strong><br>
+        <span>Illustrative image · Not live ISS imagery</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SNAPSHOT -->
+  <section class="panel" id="snapshot">
+    <div class="panel-title">MISSION SNAPSHOT</div>
+    <div class="snapshot-grid">
+      <div class="snapshot-item">
+        <label>LAST UPDATED</label>
+        <strong id="snapshotTime">--</strong>
+      </div>
+      <div class="snapshot-item">
+        <label>ORBIT STATUS</label>
+        <strong id="snapshotStatus">Waiting</strong>
+      </div>
+      <div class="snapshot-item">
+        <label>FUTURE TIME</label>
+        <strong id="snapshotFuture">+10 min</strong>
+      </div>
+      <div class="snapshot-item">
+        <label>ALTITUDE</label>
+        <strong id="snapshotAltitude">--</strong>
+      </div>
+    </div>
+    <button class="action-btn" onclick="saveSnapshot()">DOWNLOAD SNAPSHOT JSON</button>
+  </section>
+
+  <!-- EVENTS -->
+  <section class="panel">
+    <div class="panel-title">MISSION EVENT LOG</div>
+    <div class="event-list" id="eventLog"></div>
+  </section>
+
+</div>
 </div>
 
-<h2 class="section-title">MISSION CONTROL</h2>
-
-<div class="card">
-  <div class="prediction-text">
-    Earth Visualization: <span id="globeStatus">Initializing</span><br>
-    Live Telemetry: <span id="telemetryStatus">Connecting</span><br>
-    Orbit Prediction: <span id="orbitStatus">Loading</span><br>
-    Historical Storage: Browser Local Storage<br>
-    Current Location Service: <span id="locationServiceStatus">Ready</span><br>
-    Future Location Service: <span id="futureServiceStatus">Ready</span><br>
-    Anomaly Monitoring: <span id="anomalyServiceStatus">Collecting baseline</span>
-  </div>
+<div class="footer">
+ORBITX · ORBITAL INTELLIGENCE PLATFORM · EDUCATIONAL DATA SCIENCE PROJECT
 </div>
 
 </main>
-
-<footer>
-ORBITX • ISS ORBITAL INTELLIGENCE PLATFORM • EDUCATIONAL USE
-</footer>
+</div>
 
 <script>
-// ==============================================
-// ORBITX 3.0 - ISS ORBITAL INTELLIGENCE
-// ==============================================
+// ============================================
+// ORBITX — MISSION CONTROL
+// ============================================
 
 const ISS_API = "https://api.wheretheiss.at/v1/satellites/25544";
 const TLE_API = "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=TLE";
+const HISTORY_KEY = "ORBITX_4_HISTORY";
 
-const STORAGE_KEY = "ORBITX_ISS_HISTORY_V3";
-const MAX_HISTORY = 10000;
-
-let liveData = null;
-let globe = null;
-let orbitTLE = null;
-let predictedData = null;
+let globe;
+let tle;
+let live;
+let future;
 let orbitPath = [];
+let selectedMinutes = 10;
+let chartMode = "altitude";
+let chart;
+let historyData = loadHistory();
+let geocodeBusy = false;
+let lastGeocodeTime = 0;
 
-let history = loadHistory();
+// ============================================
+// HELPERS
+// ============================================
 
-let currentLookupBusy = false;
-let futureLookupBusy = false;
-let lastCurrentLookup = 0;
-let lastFutureLookup = 0;
-let lastCurrentCoords = null;
-let lastFutureCoords = null;
+function el(id) {
+  return document.getElementById(id);
+}
 
-// ==============================================
-// STORAGE
-// ==============================================
+function fmt(value, digits=2) {
+  return Number(value).toFixed(digits);
+}
+
+function logEvent(message) {
+  const time = new Date().toUTCString().slice(17,25);
+  const item = document.createElement("div");
+  item.className = "event";
+  item.innerHTML = `<time>${time} UTC</time> ${message}`;
+  el("eventLog").prepend(item);
+}
 
 function loadHistory() {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
   } catch {
     return [];
   }
 }
 
-function saveHistory() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-  } catch (error) {
-    console.warn("Storage issue:", error);
-  }
+function saveHistoryData() {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
 }
 
 function addHistory(data) {
-  history.push({
+  historyData.push({
     timestamp: Date.now(),
     latitude: data.latitude,
     longitude: data.longitude,
@@ -542,489 +776,213 @@ function addHistory(data) {
     velocity: data.velocity
   });
 
-  if (history.length > MAX_HISTORY) history = history.slice(-MAX_HISTORY);
+  if (historyData.length > 3000) historyData = historyData.slice(-3000);
 
-  saveHistory();
-  updateHistoryPanel();
+  saveHistoryData();
+  updateHistory();
 }
 
-// ==============================================
-// HELPERS
-// ==============================================
-
-function fmt(value, digits = 4) {
-  return Number(value).toFixed(digits);
-}
-
-function getOceanName(lat, lng) {
-  const lon = ((lng + 180) % 360 + 360) % 360 - 180;
-
-  if (lat > 60) return "Arctic Ocean";
-  if (lat < -60) return "Southern Ocean";
-
-  if (lon >= -70 && lon <= 20 && lat >= -60 && lat <= 30)
-    return "Atlantic Ocean";
-
-  if (lon >= 20 && lon <= 150 && lat >= -60 && lat <= 30)
-    return "Indian Ocean";
-
-  if (lon >= 120 || lon <= -70)
-    return "Pacific Ocean";
-
-  if (lon > -70 && lon < 20 && lat > 30)
-    return "Atlantic Ocean";
-
-  return "open ocean";
-}
-
-function formatLocationData(data) {
-  const city = data.city || data.locality || data.localityInfo?.administrative?.[0]?.name;
-  const region = data.principalSubdivision;
-  const country = data.countryName;
-
-  const place = city || region || country;
-
-  const details = [region, country]
-    .filter(Boolean)
-    .filter((value, index, array) => array.indexOf(value) === index)
-    .join(", ");
-
-  return { place, details };
-}
-
-// ==============================================
-// CHARTS
-// ==============================================
-
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  animation: false,
-  plugins: { legend: { display: false } },
-  scales: {
-    x: {
-      ticks: { color: "#68809e", maxTicksLimit: 6 },
-      grid: { color: "rgba(100,150,200,0.08)" }
-    },
-    y: {
-      ticks: { color: "#68809e" },
-      grid: { color: "rgba(100,150,200,0.08)" }
-    }
-  }
-};
-
-function createChart(id, label, color) {
-  return new Chart(document.getElementById(id), {
-    type: "line",
-    data: {
-      labels: [],
-      datasets: [{
-        label,
-        data: [],
-        borderColor: color,
-        backgroundColor: color,
-        borderWidth: 2,
-        pointRadius: 0,
-        tension: 0.25
-      }]
-    },
-    options: chartOptions
-  });
-}
-
-const altitudeChart = createChart("altitudeChart", "Altitude", "#37d9ff");
-const velocityChart = createChart("velocityChart", "Velocity", "#ffb347");
-
-function updateCharts() {
-  const recent = history.slice(-100);
-  const labels = recent.map(r => new Date(r.timestamp).toLocaleTimeString());
-
-  altitudeChart.data.labels = labels;
-  altitudeChart.data.datasets[0].data = recent.map(r => r.altitude);
-  altitudeChart.update();
-
-  velocityChart.data.labels = labels;
-  velocityChart.data.datasets[0].data = recent.map(r => r.velocity);
-  velocityChart.update();
-}
-
-// ==============================================
-// GLOBE INITIALIZATION
-// ==============================================
+// ============================================
+// GLOBE
+// ============================================
 
 function initGlobe() {
-  const el = document.getElementById("globeViz");
+  const container = el("globeViz");
 
-  globe = Globe()(el)
-    .width(el.clientWidth)
-    .height(el.clientHeight)
+  globe = Globe()(container)
+    .width(container.clientWidth)
+    .height(container.clientHeight)
     .backgroundColor("rgba(0,0,0,0)")
-    .globeImageUrl("https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg")
-    .bumpImageUrl("https://unpkg.com/three-globe/example/img/earth-topology.png")
+    .globeImageUrl("https://unpkg.com/globe.gl/example/img/earth-blue-marble.jpg")
+    .bumpImageUrl("https://unpkg.com/globe.gl/example/img/earth-topology.png")
     .showAtmosphere(true)
-    .atmosphereColor("#39aaff")
+    .atmosphereColor("#28bfff")
     .atmosphereAltitude(0.18)
     .showGraticules(true)
 
-    // Markers
     .pointsData([])
     .pointLat(d => d.lat)
     .pointLng(d => d.lng)
-    .pointColor(d => d.type === "live" ? "#ff2020" : "#ffae42")
-    .pointRadius(d => d.type === "live" ? 1.1 : 0.45)
-    .pointAltitude(d => d.type === "live" ? 0.05 : 0.035)
-    .pointLabel(d => d.type === "live" ? "LIVE ISS POSITION" : "10-MIN PREDICTION")
+    .pointColor(d => d.kind === "future" ? "#ffad55" : "#ff4040")
+    .pointRadius(d => d.kind === "live" ? 0.9 : 0.55)
+    .pointAltitude(0.04)
+    .pointLabel(d => d.kind === "live" ? "LIVE ISS" : "FUTURE ISS")
 
-    // Pulsing live rings
     .ringsData([])
     .ringLat(d => d.lat)
     .ringLng(d => d.lng)
-    .ringColor(() => ["rgba(255,25,25,0.8)", "rgba(255,25,25,0.15)"])
-    .ringMaxRadius(5)
-    .ringPropagationSpeed(1.5)
+    .ringColor(() => ["rgba(255,40,40,.8)", "rgba(255,40,40,.05)"])
+    .ringMaxRadius(4)
+    .ringPropagationSpeed(1.4)
     .ringRepeatPeriod(1600)
-    .ringResolution(128)
 
-    // Orbital paths
     .pathsData([])
     .pathPoints(d => d.points)
     .pathPointLat(p => p.lat)
     .pathPointLng(p => p.lng)
-    .pathColor(d => d.kind === "prediction" ? "#39aaff" : "#ffd34d")
-    .pathStroke(d => d.kind === "prediction" ? 1.5 : 1)
+    .pathColor(d => d.kind === "future" ? "#ffad55" : "#39d9ff")
+    .pathStroke(d => d.kind === "future" ? 1.4 : 0.9)
     .pathDashLength(0.5)
-    .pathDashGap(0.15)
+    .pathDashGap(0.2)
     .pathDashAnimateTime(5000);
 
-  globe.pointOfView({ lat: 10, lng: 0, altitude: 2.4 }, 1000);
-
+  globe.pointOfView({ lat: 0, lng: 0, altitude: 2.3 }, 1000);
   globe.controls().autoRotate = true;
-  globe.controls().autoRotateSpeed = 0.35;
-
-  document.getElementById("globeStatus").textContent = "Enabled";
+  globe.controls().autoRotateSpeed = 0.3;
 
   window.addEventListener("resize", () => {
-    globe.width(el.clientWidth);
-    globe.height(el.clientHeight);
+    globe.width(container.clientWidth);
+    globe.height(container.clientHeight);
   });
 }
 
-// ==============================================
-// LIVE ISS TELEMETRY
-// ==============================================
+// ============================================
+// LIVE DATA
+// ============================================
 
 async function fetchISS() {
   try {
     const response = await fetch(ISS_API, { cache: "no-store" });
-    if (!response.ok) throw new Error("ISS API response error");
-
+    if (!response.ok) throw new Error("ISS API unavailable");
     const data = await response.json();
 
-    liveData = {
+    live = {
       latitude: Number(data.latitude),
       longitude: Number(data.longitude),
       altitude: Number(data.altitude),
       velocity: Number(data.velocity)
     };
 
-    updateTelemetryUI(data);
-    addHistory(liveData);
-    updateCharts();
-    updateGlobe();
-    updateCurrentLocation(liveData.latitude, liveData.longitude);
-    updateAnomalyDetection();
+    el("altitude").textContent = fmt(live.altitude);
+    el("velocity").textContent = fmt(live.velocity);
+    el("latitude").textContent = fmt(live.latitude, 3) + "°";
+    el("longitude").textContent = fmt(live.longitude, 3) + "°";
 
-    document.getElementById("connectionStatus").textContent = "LIVE DATA CONNECTED";
-    document.getElementById("headerStatus").textContent = "● SYSTEM ONLINE";
-    document.getElementById("telemetryStatus").textContent = "Connected";
+    el("onlineStatus").textContent = "● ONLINE";
+    el("missionStatus").textContent = "OPERATIONAL";
+    el("snapshotStatus").textContent = "Nominal";
+    el("snapshotTime").textContent = new Date().toLocaleTimeString();
+    el("snapshotAltitude").textContent = fmt(live.altitude) + " km";
+
+    addHistory(live);
+    updateChart();
+    updateGlobe();
+    updateDayNight(live.latitude, live.longitude);
+    updateCurrentLocation(live.latitude, live.longitude);
+    updateAnomaly();
+
   } catch (error) {
-    console.error("ISS fetch error:", error);
-    document.getElementById("connectionStatus").textContent = "CONNECTION RETRYING";
-    document.getElementById("headerStatus").textContent = "● CONNECTION RETRYING";
-    document.getElementById("telemetryStatus").textContent = "Connection retry";
+    el("onlineStatus").textContent = "● RETRYING";
+    el("missionStatus").textContent = "DATA UNAVAILABLE";
+    logEvent("Live telemetry fetch failed");
+    console.error(error);
   }
 }
 
-function updateTelemetryUI(data) {
-  document.getElementById("latitude").textContent = fmt(data.latitude, 4) + "°";
-  document.getElementById("longitude").textContent = fmt(data.longitude, 4) + "°";
-  document.getElementById("altitude").textContent = fmt(data.altitude, 2);
-  document.getElementById("velocity").textContent = fmt(data.velocity, 2);
-  document.getElementById("lastUpdate").textContent = new Date().toLocaleTimeString();
-}
+// ============================================
+// LOCATION
+// ============================================
 
-// ==============================================
-// REVERSE GEOGRAPHIC LOOKUP
-// ==============================================
-
-async function reverseLookup(lat, lng) {
+async function geocode(lat, lng) {
   const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`;
   const response = await fetch(url);
-  if (!response.ok) throw new Error("Reverse-geocode failed");
+  if (!response.ok) throw new Error("Geocoder unavailable");
   return response.json();
 }
 
-// ==============================================
-// CURRENT LOCATION
-// ==============================================
+function approximateOcean(lat, lng) {
+  if (lat > 60) return "Arctic Ocean";
+  if (lat < -60) return "Southern Ocean";
+  if (lng >= -70 && lng <= 20) return "Atlantic Ocean";
+  if (lng > 20 && lng < 150) return "Indian Ocean";
+  return "Pacific Ocean";
+}
+
+function locationText(data) {
+  const place = data.city || data.locality || data.principalSubdivision || data.countryName || "Unknown";
+  const details = [data.principalSubdivision, data.countryName].filter(Boolean).join(", ");
+  return { place, details };
+}
 
 async function updateCurrentLocation(lat, lng) {
-  const now = Date.now();
+  el("currentCoordinates").textContent = `LAT ${fmt(lat,3)}° | LNG ${fmt(lng,3)}°`;
 
-  document.getElementById("locationCoords").textContent =
-    `LAT ${fmt(lat,3)}° | LNG ${fmt(lng,3)}°`;
+  if (geocodeBusy || Date.now() - lastGeocodeTime < 60000) return;
 
-  if (
-    currentLookupBusy ||
-    (now - lastCurrentLookup < 60000 &&
-      lastCurrentCoords &&
-      Math.abs(lastCurrentCoords.lat - lat) < 1 &&
-      Math.abs(lastCurrentCoords.lng - lng) < 1)
-  ) return;
-
-  currentLookupBusy = true;
-  lastCurrentLookup = now;
-  lastCurrentCoords = { lat, lng };
-
-  document.getElementById("issLocation").textContent = "Locating...";
-  document.getElementById("issCountry").textContent = "Looking up current location...";
+  geocodeBusy = true;
+  lastGeocodeTime = Date.now();
 
   try {
-    const data = await reverseLookup(lat, lng);
-
+    const data = await geocode(lat, lng);
     if (data.countryName) {
-      const location = formatLocationData(data);
-      document.getElementById("issLocation").textContent = "📍 " + (location.place || data.countryName);
-      document.getElementById("issCountry").textContent = location.details || data.countryName;
+      const loc = locationText(data);
+      el("currentPlace").textContent = loc.place;
+      el("currentDetails").textContent = loc.details;
     } else {
-      document.getElementById("issLocation").textContent = "🌊 Over the " + getOceanName(lat, lng);
-      document.getElementById("issCountry").textContent = "No country directly below the ISS";
+      el("currentPlace").textContent = "Over " + approximateOcean(lat, lng);
+      el("currentDetails").textContent = "No country detected beneath ISS";
     }
-
-    document.getElementById("locationServiceStatus").textContent = "Active";
-  } catch (error) {
-    document.getElementById("issLocation").textContent = "Location unavailable";
-    document.getElementById("issCountry").textContent = "Coordinates remain available";
-    document.getElementById("locationServiceStatus").textContent = "Retrying";
-    console.warn("Current location lookup:", error);
+  } catch {
+    el("currentPlace").textContent = "Location lookup unavailable";
+    el("currentDetails").textContent = "Coordinates are still updating";
   } finally {
-    currentLookupBusy = false;
+    geocodeBusy = false;
   }
 }
-
-// ==============================================
-// FUTURE LOCATION (+10 MIN)
-// ==============================================
 
 async function updateFutureLocation(lat, lng) {
-  const placeEl = document.getElementById("futureLocation");
-  const countryEl = document.getElementById("futureCountry");
-  const coordsEl = document.getElementById("futureCoords");
-
-  coordsEl.textContent = `LAT ${fmt(lat,3)}° | LNG ${fmt(lng,3)}°`;
-
-  const now = Date.now();
-
-  if (
-    futureLookupBusy ||
-    (now - lastFutureLookup < 60000 &&
-      lastFutureCoords &&
-      Math.abs(lastFutureCoords.lat - lat) < 1 &&
-      Math.abs(lastFutureCoords.lng - lng) < 1)
-  ) return;
-
-  futureLookupBusy = true;
-  lastFutureLookup = now;
-  lastFutureCoords = { lat, lng };
-
-  placeEl.textContent = "🟠 Locating predicted position...";
-  countryEl.textContent = "Looking up location 10 minutes ahead...";
+  el("futureCoordinates").textContent = `LAT ${fmt(lat,3)}° | LNG ${fmt(lng,3)}°`;
 
   try {
-    const data = await reverseLookup(lat, lng);
-
+    const data = await geocode(lat, lng);
     if (data.countryName) {
-      const location = formatLocationData(data);
-      placeEl.textContent = "🟠 " + (location.place || data.countryName);
-      countryEl.textContent = location.details || data.countryName;
+      const loc = locationText(data);
+      el("futurePlace").textContent = loc.place;
+      el("futureDetails").textContent = loc.details;
     } else {
-      placeEl.textContent = "🌊 Over the " + getOceanName(lat, lng);
-      countryEl.textContent = "Predicted position over open water";
+      el("futurePlace").textContent = "Over " + approximateOcean(lat, lng);
+      el("futureDetails").textContent = "Predicted position over open water";
     }
-
-    document.getElementById("futureServiceStatus").textContent = "Active";
-  } catch (error) {
-    placeEl.textContent = "Location lookup unavailable";
-    countryEl.textContent = "Predicted coordinates remain available";
-    document.getElementById("futureServiceStatus").textContent = "Retrying";
-    console.warn("Future location lookup:", error);
-  } finally {
-    futureLookupBusy = false;
+  } catch {
+    el("futurePlace").textContent = "Location lookup unavailable";
+    el("futureDetails").textContent = "Predicted coordinates are available";
   }
 }
 
-// ==============================================
-// GLOBE UPDATE
-// ==============================================
-
-function updateGlobe() {
-  if (!globe || !liveData) return;
-
-  const markers = [{
-    lat: liveData.latitude,
-    lng: liveData.longitude,
-    type: "live"
-  }];
-
-  if (predictedData) {
-    markers.push({
-      lat: predictedData.latitude,
-      lng: predictedData.longitude,
-      type: "prediction"
-    });
-  }
-
-  globe.pointsData(markers);
-
-  // Red pulse rings around current ISS location
-  globe.ringsData([
-    { lat: liveData.latitude, lng: liveData.longitude },
-    { lat: liveData.latitude, lng: liveData.longitude }
-  ]);
-
-  // Recent trail and calculated orbit path
-  const trail = history.slice(-80).map(r => ({
-    lat: r.latitude,
-    lng: r.longitude
-  }));
-
-  const paths = [];
-
-  if (orbitPath.length > 1) {
-    paths.push({ kind: "prediction", points: orbitPath });
-  }
-
-  if (trail.length > 1) {
-    paths.push({ kind: "trail", points: trail });
-  }
-
-  globe.pathsData(paths);
-
-  // Center camera on current ISS location
-  globe.pointOfView({
-    lat: liveData.latitude,
-    lng: liveData.longitude,
-    altitude: 2.4
-  }, 800);
-}
-
-// ==============================================
-// HISTORY & CSV
-// ==============================================
-
-function updateHistoryPanel() {
-  document.getElementById("recordCount").textContent = history.length;
-
-  if (history.length > 1) {
-    const hours = (history[history.length - 1].timestamp - history[0].timestamp) / 3600000;
-    document.getElementById("collectionPeriod").textContent = hours.toFixed(2) + " h";
-  }
-
-  if (history.length > 0) {
-    const target = Date.now() - 24 * 60 * 60 * 1000;
-    let closest = null;
-    let bestDifference = Infinity;
-
-    history.forEach(r => {
-      const diff = Math.abs(r.timestamp - target);
-      if (diff < bestDifference) {
-        bestDifference = diff;
-        closest = r;
-      }
-    });
-
-    if (closest && bestDifference <= 30 * 60 * 1000) {
-      document.getElementById("yesterdayLocation").textContent =
-        `${closest.latitude.toFixed(2)}°, ${closest.longitude.toFixed(2)}°`;
-    } else {
-      document.getElementById("yesterdayLocation").textContent = "Not yet available";
-    }
-  }
-}
-
-function downloadCSV() {
-  if (!history.length) {
-    alert("No data collected yet.");
-    return;
-  }
-
-  let csv = "Timestamp,Latitude,Longitude,Altitude_km,Velocity_kmh\n";
-
-  history.forEach(r => {
-    csv += [
-      new Date(r.timestamp).toISOString(),
-      r.latitude,
-      r.longitude,
-      r.altitude,
-      r.velocity
-    ].join(",") + "\n";
-  });
-
-  const blob = new Blob([csv], { type: "text/csv" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "ORBITX_ISS_History.csv";
-  link.click();
-  URL.revokeObjectURL(link.href);
-}
-
-function clearHistory() {
-  if (!confirm("Delete all locally collected ISS history?")) return;
-  history = [];
-  saveHistory();
-  updateHistoryPanel();
-  updateCharts();
-}
-
-// ==============================================
-// SGP4 / ORBIT PREDICTION
-// ==============================================
+// ============================================
+// SGP4
+// ============================================
 
 async function loadTLE() {
   try {
-    const response = await fetch(TLE_API, { cache: "no-store" });
-    if (!response.ok) throw new Error("TLE unavailable");
-
+    const response = await fetch(TLE_API);
+    if (!response.ok) throw new Error("TLE request failed");
     const text = await response.text();
     const lines = text.trim().split(/\r?\n/);
-    const line1 = lines.find(line => line.startsWith("1 "));
-    const line2 = lines.find(line => line.startsWith("2 "));
 
-    if (!line1 || !line2) throw new Error("TLE lines not found");
+    const line1 = lines.find(l => l.startsWith("1 "));
+    const line2 = lines.find(l => l.startsWith("2 "));
 
-    orbitTLE = satellite.twoline2satrec(line1, line2);
+    if (!line1 || !line2) throw new Error("TLE missing");
 
-    document.getElementById("orbitStatus").textContent = "Ready";
-    document.getElementById("predictionStatus").textContent = "Orbital elements loaded. Calculating future ISS position...";
-    updatePrediction();
+    tle = satellite.twoline2satrec(line1, line2);
+    logEvent("Orbital elements loaded");
+    updateFuture();
   } catch (error) {
-    console.warn("TLE loading error:", error);
-    document.getElementById("orbitStatus").textContent = "Unavailable";
-    document.getElementById("predictionStatus").textContent = "TLE could not be loaded.";
-    document.getElementById("predictionAlert").textContent = "Live tracking works, but SGP4 requires orbital elements from CelesTrak.";
+    el("futureReadout").textContent = "Could not load orbital elements. Live tracking still works.";
+    logEvent("SGP4 prediction unavailable");
+    console.error(error);
   }
 }
 
-function propagateTo(date) {
-  if (!orbitTLE) return null;
+function propagate(date) {
+  if (!tle) return null;
 
-  const pv = satellite.propagate(orbitTLE, date);
-  const position = pv.position;
-
-  if (!position || typeof position === "boolean") return null;
+  const pv = satellite.propagate(tle, date);
+  if (!pv.position || typeof pv.position === "boolean") return null;
 
   const gmst = satellite.gstime(date);
-  const geo = satellite.eciToGeodetic(position, gmst);
+  const geo = satellite.eciToGeodetic(pv.position, gmst);
 
   return {
     latitude: satellite.degreesLat(geo.latitude),
@@ -1033,103 +991,363 @@ function propagateTo(date) {
   };
 }
 
-function updatePrediction() {
-  if (!orbitTLE) return;
+function updateFuture() {
+  if (!tle) return;
 
+  const targetDate = new Date(Date.now() + selectedMinutes * 60000);
+  future = propagate(targetDate);
+
+  if (!future) return;
+
+  el("snapshotFuture").textContent = `+${selectedMinutes} min`;
+
+  el("futureReadout").textContent =
+    `+${selectedMinutes} MIN · ` +
+    `LAT ${fmt(future.latitude,4)}° · LNG ${fmt(future.longitude,4)}° · ` +
+    `ALT ${fmt(future.altitude,2)} km · ` +
+    `ETA ${targetDate.toLocaleTimeString()}`;
+
+  updateFutureLocation(future.latitude, future.longitude);
+
+  buildOrbit();
+  updateGlobe();
+}
+
+function buildOrbit() {
+  if (!tle) return;
+
+  orbitPath = [];
   const now = new Date();
-  const futureTime = new Date(now.getTime() + 10 * 60 * 1000);
 
-  // Calculate the future position 10 minutes ahead
-  predictedData = propagateTo(futureTime);
+  // Predicted track over the next 100 minutes
+  for (let minute = 0; minute <= 100; minute += 2) {
+    const p = propagate(new Date(now.getTime() + minute * 60000));
+    if (p) orbitPath.push({ lat: p.latitude, lng: p.longitude });
+  }
+}
 
-  if (!predictedData) {
-    document.getElementById("predictionStatus").textContent = "Prediction calculation unavailable.";
+// ============================================
+// GLOBE DATA
+// ============================================
+
+function updateGlobe() {
+  if (!globe || !live) return;
+
+  const points = [{
+    lat: live.latitude,
+    lng: live.longitude,
+    kind: "live"
+  }];
+
+  if (future) {
+    points.push({
+      lat: future.latitude,
+      lng: future.longitude,
+      kind: "future"
+    });
+  }
+
+  globe.pointsData(points);
+
+  globe.ringsData([
+    { lat: live.latitude, lng: live.longitude },
+    { lat: live.latitude, lng: live.longitude }
+  ]);
+
+  const pastTrack = historyData.slice(-100).map(r => ({
+    lat: r.latitude,
+    lng: r.longitude
+  }));
+
+  const paths = [];
+
+  if (orbitPath.length) {
+    paths.push({ kind: "orbit", points: orbitPath });
+  }
+
+  if (pastTrack.length > 1) {
+    paths.push({ kind: "trail", points: pastTrack });
+  }
+
+  globe.pathsData(paths);
+}
+
+// ============================================
+// DAY / NIGHT ESTIMATION
+// ============================================
+
+function updateDayNight(lat, lng) {
+  const now = new Date();
+
+  // Approximate solar declination
+  const dayOfYear = Math.floor(
+    (Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) -
+     Date.UTC(now.getUTCFullYear(), 0, 1)) / 86400000
+  ) + 1;
+
+  const declination = 23.44 * Math.sin((360 / 365) * (dayOfYear - 81) * Math.PI / 180);
+
+  // Approximate UTC solar hour
+  const utcHours = now.getUTCHours() + now.getUTCMinutes() / 60;
+  const solarHour = (utcHours + lng / 15 + 24) % 24;
+  const hourAngle = (solarHour - 12) * 15;
+
+  const latRad = lat * Math.PI / 180;
+  const decRad = declination * Math.PI / 180;
+  const hourRad = hourAngle * Math.PI / 180;
+
+  const cosZenith =
+    Math.sin(latRad) * Math.sin(decRad) +
+    Math.cos(latRad) * Math.cos(decRad) * Math.cos(hourRad);
+
+  const daylight = cosZenith > 0;
+
+  el("dayIcon").textContent = daylight ? "☀️" : "🌙";
+  el("dayStatus").textContent = daylight ? "Estimated daylight" : "Estimated nighttime";
+  el("dayDescription").textContent =
+    `Solar declination ${declination.toFixed(1)}° · Approximate solar calculation`;
+}
+
+// ============================================
+// CHART
+// ============================================
+
+function initChart() {
+  chart = new Chart(el("telemetryChart"), {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [{
+        label: "Altitude",
+        data: [],
+        borderColor: "#39d9ff",
+        backgroundColor: "#39d9ff",
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: 0.25
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: {
+          ticks: { color: "#7892ad", maxTicksLimit: 6 },
+          grid: { color: "#10243b" }
+        },
+        y: {
+          ticks: { color: "#7892ad" },
+          grid: { color: "#10243b" }
+        }
+      }
+    }
+  });
+}
+
+function updateChart() {
+  if (!chart) return;
+  const recent = historyData.slice(-100);
+
+  chart.data.labels = recent.map(r => new Date(r.timestamp).toLocaleTimeString());
+  chart.data.datasets[0].data = recent.map(r => chartMode === "altitude" ? r.altitude : r.velocity);
+  chart.data.datasets[0].label = chartMode === "altitude" ? "Altitude (km)" : "Velocity (km/h)";
+  chart.data.datasets[0].borderColor = chartMode === "altitude" ? "#39d9ff" : "#ffad55";
+  chart.update();
+}
+
+// ============================================
+// HISTORICAL DATA
+// ============================================
+
+function updateHistory() {
+  el("readingCount").textContent = historyData.length;
+
+  if (historyData.length > 1) {
+    const hours = (historyData[historyData.length - 1].timestamp - historyData[0].timestamp) / 3600000;
+    el("collectionTime").textContent = (hours * 60).toFixed(1) + " min";
+  }
+}
+
+function downloadCSV() {
+  if (!historyData.length) {
+    alert("No history yet!");
     return;
   }
 
-  // Show predicted coordinates and lookup future country/region/ocean
-  document.getElementById("predictionStatus").textContent =
-    `+10 MIN: LAT ${predictedData.latitude.toFixed(4)}°, ` +
-    `LNG ${predictedData.longitude.toFixed(4)}°, ` +
-    `ALT ${predictedData.altitude.toFixed(2)} km`;
+  let csv = "Time,Latitude,Longitude,Altitude,Velocity\n";
 
-  document.getElementById("predictionAlert").textContent =
-    `Predicted position at ${futureTime.toLocaleTimeString()} (SGP4).`;
+  historyData.forEach(r => {
+    csv += `${new Date(r.timestamp).toISOString()},${r.latitude},${r.longitude},${r.altitude},${r.velocity}\n`;
+  });
 
-  updateFutureLocation(predictedData.latitude, predictedData.longitude);
-
-  // Build future 90-minute orbital path
-  orbitPath = [];
-
-  for (let minutes = 0; minutes <= 90; minutes += 2) {
-    const p = propagateTo(new Date(now.getTime() + minutes * 60000));
-    if (p) orbitPath.push({ lat: p.latitude, lng: p.longitude });
-  }
-
-  updateGlobe();
-
-  document.getElementById("orbitStatus").textContent = "Ready";
+  const blob = new Blob([csv], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "ORBITX_history.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
-// ==============================================
+function clearHistory() {
+  if (!confirm("Delete your collected history?")) return;
+  historyData = [];
+  saveHistoryData();
+  updateHistory();
+  updateChart();
+  logEvent("History cleared by user");
+}
+
+// ============================================
 // ANOMALY DETECTION
-// ==============================================
+// ============================================
 
-function updateAnomalyDetection() {
-  const status = document.getElementById("anomalyStatus");
-  const alertBox = document.getElementById("anomalyAlert");
-
-  const values = history.slice(-50).map(r => r.altitude);
+function updateAnomaly() {
+  const values = historyData.slice(-50).map(r => r.altitude);
 
   if (values.length < 11) {
-    status.textContent = `Collecting baseline. Need 11 readings. Currently ${values.length}.`;
-    alertBox.textContent = "Building initial altitude baseline.";
-    document.getElementById("anomalyServiceStatus").textContent = "Collecting baseline";
+    el("anomalyStatus").textContent =
+      `Building baseline: ${values.length}/11 readings collected. This is experimental statistical monitoring.`;
     return;
   }
 
   const baseline = values.slice(0, -1);
   const latest = values[values.length - 1];
 
-  const mean = baseline.reduce((sum, v) => sum + v, 0) / baseline.length;
-  const variance = baseline.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / baseline.length;
-  const sd = Math.sqrt(variance);
-  const z = sd === 0 ? 0 : (latest - mean) / sd;
+  const mean = baseline.reduce((a,b) => a+b, 0) / baseline.length;
+  const sd = Math.sqrt(baseline.reduce((a,b) => a + (b-mean)**2, 0) / baseline.length);
+  const z = sd ? (latest - mean) / sd : 0;
   const deviation = latest - mean;
 
-  status.textContent =
-    `Mean: ${mean.toFixed(3)} km | Deviation: ${deviation.toFixed(3)} km | Z-score: ${z.toFixed(2)}`;
-
   if (Math.abs(z) > 3 && Math.abs(deviation) > 0.5) {
-    alertBox.textContent = "Statistical anomaly detected. This is an unusual reading, not proof of a spacecraft problem.";
-    alertBox.className = "alert warning";
-    document.getElementById("anomalyServiceStatus").textContent = "Unusual measurement";
+    el("anomalyStatus").className = "alert-box warning";
+    el("anomalyStatus").textContent =
+      `Unusual altitude reading. Mean ${mean.toFixed(2)} km; latest ${latest.toFixed(2)} km; Z-score ${z.toFixed(2)}. Not a spacecraft fault diagnosis.`;
   } else {
-    alertBox.textContent = "No statistical altitude anomaly detected in this baseline.";
-    alertBox.className = "alert";
-    document.getElementById("anomalyServiceStatus").textContent = "Monitoring";
+    el("anomalyStatus").className = "alert-box";
+    el("anomalyStatus").textContent =
+      `No unusual altitude reading detected. Mean ${mean.toFixed(2)} km; latest ${latest.toFixed(2)} km; Z-score ${z.toFixed(2)}.`;
   }
 }
 
-// ==============================================
+// ============================================
+// SNAPSHOT
+// ============================================
+
+function saveSnapshot() {
+  if (!live) {
+    alert("Wait for live telemetry first.");
+    return;
+  }
+
+  const snapshot = {
+    project: "ORBITX",
+    snapshotType: "ISS Orbital Snapshot",
+    generatedAt: new Date().toISOString(),
+    current: live,
+    predicted: {
+      minutesAhead: selectedMinutes,
+      position: future
+    },
+    currentLocation: {
+      name: el("currentPlace").textContent,
+      details: el("currentDetails").textContent
+    },
+    futureLocation: {
+      name: el("futurePlace").textContent,
+      details: el("futureDetails").textContent
+    },
+    dayNight: el("dayStatus").textContent,
+    collectedReadings: historyData.length
+  };
+
+  const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "ORBITX_Mission_Snapshot.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+
+  logEvent("Mission snapshot exported");
+}
+
+// ============================================
+// INTERACTIONS
+// ============================================
+
+// Future time buttons
+document.querySelectorAll(".time-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".time-btn").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    selectedMinutes = Number(btn.dataset.min);
+    el("futureSlider").value = selectedMinutes;
+    updateFuture();
+  });
+});
+
+// Slider
+el("futureSlider").addEventListener("input", event => {
+  selectedMinutes = Number(event.target.value);
+  document.querySelectorAll(".time-btn").forEach(b => b.classList.remove("selected"));
+  updateFuture();
+});
+
+// Chart tabs
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    chartMode = tab.dataset.chart;
+    updateChart();
+  });
+});
+
+// Sidebar navigation
+document.querySelectorAll(".nav").forEach(nav => {
+  nav.addEventListener("click", () => {
+    document.querySelectorAll(".nav").forEach(n => n.classList.remove("active"));
+    nav.classList.add("active");
+
+    const target = nav.dataset.section;
+    if (target === "dashboard") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    const section = document.getElementById(target);
+    if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+});
+
+// ============================================
+// CLOCK
+// ============================================
+
+function updateClock() {
+  el("utcClock").textContent = "UTC " + new Date().toISOString().slice(11,19);
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ============================================
 // STARTUP
-// ==============================================
+// ============================================
 
 initGlobe();
-updateHistoryPanel();
-updateCharts();
+initChart();
+updateHistory();
 
 fetchISS();
 loadTLE();
 
-// Live telemetry every 10 seconds
 setInterval(fetchISS, 10000);
-
-// Recalculate prediction every minute
-setInterval(updatePrediction, 60000);
-
-// Refresh orbital elements every 6 hours
+setInterval(updateFuture, 60000);
 setInterval(loadTLE, 6 * 60 * 60 * 1000);
+
+logEvent("ORBITX initialized");
+logEvent("ISS telemetry connection started");
 </script>
 
 </body>
