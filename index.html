@@ -568,6 +568,58 @@ button { font-family: inherit; cursor: pointer; }
     .page-title { font-size: 15px; }
 }
 
+.iss-location-container {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.iss-location-card {
+  background: #0b1425;
+  border: 1px solid #1d3150;
+  border-radius: 12px;
+  padding: 20px;
+  color: #eaf3ff;
+}
+
+.iss-location-card h3 {
+  font-size: 15px;
+  letter-spacing: 1px;
+}
+
+.iss-location-card p {
+  color: #9aacc5;
+  font-size: 13px;
+}
+
+.iss-location-card strong {
+  color: #62baff;
+}
+
+.iss-live {
+  color: #48e6a2;
+  font-size: 11px;
+}
+
+.future-location {
+  background: #101e34;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.future-location h4 {
+  color: #62baff;
+  margin: 3px 0;
+}
+
+@media(max-width: 750px) {
+  .iss-location-container {
+    grid-template-columns: 1fr;
+  }
+}
+
 </style>
 </head>
 
@@ -691,6 +743,56 @@ button { font-family: inherit; cursor: pointer; }
         </div>
 
     </section>
+
+<!-- ISS LOCATION INFORMATION -->
+
+<div class="iss-location-container">
+
+  <div class="iss-location-card">
+    <h3>📍 CURRENT ISS LOCATION</h3>
+    <span class="iss-live">● LIVE TRACKING</span>
+
+    <p>Latitude: <strong id="currentLat">--</strong></p>
+    <p>Longitude: <strong id="currentLon">--</strong></p>
+    <p>Altitude: <strong id="currentAlt">--</strong></p>
+    <p>Velocity: <strong id="currentVelocity">--</strong></p>
+    <p>Last updated: <strong id="issUpdated">--</strong></p>
+  </div>
+
+  <div class="iss-location-card">
+    <h3>🚀 FUTURE ISS LOCATIONS</h3>
+    <p>Predicted using SGP4 orbital calculations</p>
+
+    <div class="future-location">
+      <h4>+10 Minutes</h4>
+      <p>Latitude: <strong id="futureLat10">--</strong></p>
+      <p>Longitude: <strong id="futureLon10">--</strong></p>
+      <p>Altitude: <strong id="futureAlt10">--</strong></p>
+    </div>
+
+    <div class="future-location">
+      <h4>+30 Minutes</h4>
+      <p>Latitude: <strong id="futureLat30">--</strong></p>
+      <p>Longitude: <strong id="futureLon30">--</strong></p>
+      <p>Altitude: <strong id="futureAlt30">--</strong></p>
+    </div>
+
+    <div class="future-location">
+      <h4>+60 Minutes</h4>
+      <p>Latitude: <strong id="futureLat60">--</strong></p>
+      <p>Longitude: <strong id="futureLon60">--</strong></p>
+      <p>Altitude: <strong id="futureAlt60">--</strong></p>
+    </div>
+
+    <div class="future-location">
+      <h4>+90 Minutes</h4>
+      <p>Latitude: <strong id="futureLat90">--</strong></p>
+      <p>Longitude: <strong id="futureLon90">--</strong></p>
+      <p>Altitude: <strong id="futureAlt90">--</strong></p>
+    </div>
+  </div>
+
+</div>
 
     <!-- LOWER GRID -->
     <section class="lower-grid">
@@ -1135,10 +1237,13 @@ function updateDashboard(position) {
     const alt = position.alt;
     const velocity = position.velocity;
 
-    $("altitude").textContent = alt.toFixed(2);
-    $("velocity").textContent = Math.round(velocity).toLocaleString("en-US");
-    $("latitude").textContent = lat.toFixed(3) + "°";
-    $("longitude").textContent = lng.toFixed(3) + "°";
+  // CURRENT ISS LOCATION
+$("currentLat").textContent = lat.toFixed(3) + "°";
+$("currentLon").textContent = lng.toFixed(3) + "°";
+$("currentAlt").textContent = alt.toFixed(2) + " km";
+$("currentVelocity").textContent =
+    Math.round(velocity).toLocaleString("en-US") + " km/h";
+$("issUpdated").textContent = new Date().toISOString().slice(11,19) + " UTC";
 
     $("snapshotAltitude").textContent = alt.toFixed(2) + " km";
     $("snapshotVelocity").textContent = Math.round(velocity) + " km/h";
@@ -1294,7 +1399,36 @@ function predict(minutes, button) {
     addEvent("Future position calculated: +" + minutes + " minutes.");
 }
 
+/* FUTURE ISS LOCATION CARDS */
 
+function updateFutureLocations() {
+
+    if (!satelliteRecord) return;
+
+    const now = new Date();
+    const predictionTimes = [10, 30, 60, 90];
+
+    predictionTimes.forEach(minutes => {
+
+        const futureDate = new Date(
+            now.getTime() + minutes * 60000
+        );
+
+        const position = getSGP4Position(futureDate);
+
+        if (!position) return;
+
+        $("futureLat" + minutes).textContent =
+            position.lat.toFixed(3) + "°";
+
+        $("futureLon" + minutes).textContent =
+            position.lng.toFixed(3) + "°";
+
+        $("futureAlt" + minutes).textContent =
+            position.alt.toFixed(2) + " km";
+    });
+}
+    
 /* ==========================================
    DAY / NIGHT CALCULATION
 ========================================== */
