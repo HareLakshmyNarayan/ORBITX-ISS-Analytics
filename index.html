@@ -733,7 +733,7 @@ ORBITX · ORBITAL INTELLIGENCE PLATFORM · EDUCATIONAL DATA SCIENCE PROJECT
 // ============================================
 
 const ISS_API = "https://api.wheretheiss.at/v1/satellites/25544";
-const TLE_API = "https://celestrak.org/NORAD/elements/gp.php?CATNR=25544&FORMAT=TLE";
+const TLE_API = "https://tle.ivanstanojevic.me/api/tle/25544";
 const HISTORY_KEY = "ORBITX_4_HISTORY";
 
 const TLE_CACHE_KEY = "ORBITX_ISS_TLE_CACHE";
@@ -1127,13 +1127,15 @@ async function loadTLE() {
       throw new Error(`CelesTrak HTTP error: ${response.status}`);
     }
 
-    const text = await response.text();
+   const data = await response.json();
 
-    if (!text || text.length < 100) {
-      throw new Error("CelesTrak returned incomplete orbital data.");
-    }
+if (!data.line1 || !data.line2) {
+  throw new Error("ISS orbital data is incomplete.");
+}
 
-    const newSatrec = parseTLEText(text);
+const text = `${data.name}\n${data.line1}\n${data.line2}`;
+
+const newSatrec = parseTLEText(text);
 
     // Replace the active orbital elements only after validation.
     tle = newSatrec;
