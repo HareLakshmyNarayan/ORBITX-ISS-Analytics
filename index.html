@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ORBITX | Mission Control</title>
 
-<!-- Libraries -->
+<!-- LIBRARIES -->
 <script src="https://unpkg.com/globe.gl"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/satellite.js/5.0.0/satellite.min.js"></script>
@@ -36,10 +36,7 @@ body {
 
 button { font-family: inherit; cursor: pointer; }
 
-.app {
-    display: flex;
-    min-height: 100vh;
-}
+.app { display: flex; min-height: 100vh; }
 
 /* SIDEBAR */
 
@@ -103,9 +100,7 @@ button { font-family: inherit; cursor: pointer; }
     line-height: 2;
 }
 
-.online-dot {
-    color: var(--green);
-}
+.online-dot { color: var(--green); }
 
 /* MAIN */
 
@@ -188,9 +183,7 @@ button { font-family: inherit; cursor: pointer; }
     gap: 16px;
 }
 
-.globe-panel {
-    grid-row: span 2;
-}
+.globe-panel { grid-row: span 2; }
 
 #globeViz {
     position: relative;
@@ -306,28 +299,46 @@ button { font-family: inherit; cursor: pointer; }
     color: #d8f4ff;
 }
 
-/* PREDICTION */
+/* FUTURE EARTH SLIDER */
 
-.prediction-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
+.prediction-slider {
     margin-bottom: 15px;
+    padding: 15px;
+    background: rgba(42, 157, 255, .06);
+    border: 1px solid var(--border);
+    border-radius: 8px;
 }
 
-.action-btn {
-    background: #122b45;
-    color: #a9dfff;
-    border: 1px solid #245477;
-    border-radius: 5px;
-    padding: 8px 12px;
+.slider-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    color: var(--muted);
     font-size: 10px;
+    letter-spacing: 1.5px;
 }
 
-.action-btn:hover, .action-btn.selected {
-    background: #12517b;
-    color: white;
-    border-color: var(--cyan);
+.slider-heading strong {
+    color: var(--cyan);
+    font-size: 26px;
+    letter-spacing: 0;
+}
+
+#predictionSlider {
+    width: 100%;
+    height: 7px;
+    cursor: pointer;
+    accent-color: var(--cyan);
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 9px;
+    letter-spacing: 1px;
 }
 
 .prediction-result {
@@ -338,11 +349,10 @@ button { font-family: inherit; cursor: pointer; }
     font-size: 11px;
     line-height: 2;
     color: #a9c5db;
+    overflow-wrap: anywhere;
 }
 
-.prediction-result strong {
-    color: var(--cyan);
-}
+.prediction-result strong { color: var(--cyan); }
 
 /* LOWER GRID */
 
@@ -495,6 +505,21 @@ button { font-family: inherit; cursor: pointer; }
 
 /* BUTTONS AND FOOTER */
 
+.action-btn {
+    background: #122b45;
+    color: #a9dfff;
+    border: 1px solid #245477;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 10px;
+}
+
+.action-btn:hover {
+    background: #12517b;
+    color: white;
+    border-color: var(--cyan);
+}
+
 .download-btn {
     width: 100%;
     background: linear-gradient(90deg, #0876ad, #1760a4);
@@ -526,12 +551,64 @@ button { font-family: inherit; cursor: pointer; }
     line-height: 1.6;
 }
 
+/* ISS LOCATION CARDS */
+
+.iss-location-container {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-top: 20px;
+}
+
+.iss-location-card {
+    background: #0b1425;
+    border: 1px solid #1d3150;
+    border-radius: 12px;
+    padding: 20px;
+    color: #eaf3ff;
+    min-width: 0;
+}
+
+.iss-location-card h3 {
+    font-size: 15px;
+    letter-spacing: 1px;
+}
+
+.iss-location-card p {
+    color: #9aacc5;
+    font-size: 13px;
+    margin-top: 10px;
+}
+
+.iss-location-card strong { color: #62baff; }
+
+.iss-live {
+    color: #48e6a2;
+    font-size: 11px;
+}
+
+.future-location {
+    background: #101e34;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin-top: 12px;
+}
+
+.future-location h4 {
+    color: #62baff;
+    margin: 3px 0;
+}
+
 /* RESPONSIVE */
 
 @media(max-width: 1050px) {
     .dashboard-grid { grid-template-columns: 1fr 1fr; }
     .globe-panel { grid-column: 1 / -1; grid-row: auto; }
     .lower-grid, .bottom-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media(max-width: 750px) {
+    .iss-location-container { grid-template-columns: 1fr; }
 }
 
 @media(max-width: 720px) {
@@ -558,68 +635,22 @@ button { font-family: inherit; cursor: pointer; }
     }
 
     .main { padding: 13px; }
+
     .dashboard-grid, .lower-grid, .bottom-grid {
         grid-template-columns: 1fr;
     }
 
     .globe-panel { grid-column: auto; }
     #globeViz { height: 300px; }
-    .top-status { flex-direction: column; align-items: flex-end; gap: 5px; }
+
+    .top-status {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 5px;
+    }
+
     .page-title { font-size: 15px; }
 }
-
-.iss-location-container {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  margin-top: 20px;
-}
-
-.iss-location-card {
-  background: #0b1425;
-  border: 1px solid #1d3150;
-  border-radius: 12px;
-  padding: 20px;
-  color: #eaf3ff;
-}
-
-.iss-location-card h3 {
-  font-size: 15px;
-  letter-spacing: 1px;
-}
-
-.iss-location-card p {
-  color: #9aacc5;
-  font-size: 13px;
-}
-
-.iss-location-card strong {
-  color: #62baff;
-}
-
-.iss-live {
-  color: #48e6a2;
-  font-size: 11px;
-}
-
-.future-location {
-  background: #101e34;
-  padding: 10px 14px;
-  border-radius: 8px;
-  margin-top: 12px;
-}
-
-.future-location h4 {
-  color: #62baff;
-  margin: 3px 0;
-}
-
-@media(max-width: 750px) {
-  .iss-location-container {
-    grid-template-columns: 1fr;
-  }
-}
-
 </style>
 </head>
 
@@ -730,69 +761,85 @@ button { font-family: inherit; cursor: pointer; }
                 <div class="panel-tag">SGP4 PREDICTION</div>
             </div>
 
-            <div class="prediction-buttons">
-                <button class="action-btn" onclick="predict(10,this)">+10 MIN</button>
-                <button class="action-btn" onclick="predict(30,this)">+30 MIN</button>
-                <button class="action-btn" onclick="predict(60,this)">+60 MIN</button>
-                <button class="action-btn" onclick="predict(90,this)">+90 MIN</button>
+            <div class="prediction-slider">
+                <div class="slider-heading">
+                    <span>PREDICTION TIME</span>
+                    <strong id="predictionMinutes">45 MIN</strong>
+                </div>
+
+                <input
+                    type="range"
+                    id="predictionSlider"
+                    min="0"
+                    max="90"
+                    step="1"
+                    value="45"
+                    oninput="updatePredictionSlider(this.value)"
+                    aria-label="Prediction time in minutes"
+                >
+
+                <div class="slider-labels">
+                    <span>0 MIN</span>
+                    <span>45 MIN</span>
+                    <span>90 MIN</span>
+                </div>
             </div>
 
             <div class="prediction-result" id="predictionResult">
-                Select a time to calculate the future ISS position.
+                Waiting for current ISS orbital elements...
             </div>
         </div>
 
     </section>
 
-<!-- ISS LOCATION INFORMATION -->
+    <!-- ISS LOCATION INFORMATION -->
+    <div class="iss-location-container">
 
-<div class="iss-location-container">
+        <div class="iss-location-card">
+            <h3>📍 CURRENT ISS LOCATION</h3>
+            <span class="iss-live">● LIVE TRACKING</span>
 
-  <div class="iss-location-card">
-    <h3>📍 CURRENT ISS LOCATION</h3>
-    <span class="iss-live">● LIVE TRACKING</span>
+            <p>Latitude: <strong id="currentLat">--</strong></p>
+            <p>Longitude: <strong id="currentLon">--</strong></p>
+            <p>Altitude: <strong id="currentAlt">--</strong></p>
+            <p>Velocity: <strong id="currentVelocity">--</strong></p>
+            <p>Last updated: <strong id="issUpdated">--</strong></p>
+        </div>
 
-    <p>Latitude: <strong id="currentLat">--</strong></p>
-    <p>Longitude: <strong id="currentLon">--</strong></p>
-    <p>Altitude: <strong id="currentAlt">--</strong></p>
-    <p>Velocity: <strong id="currentVelocity">--</strong></p>
-    <p>Last updated: <strong id="issUpdated">--</strong></p>
-  </div>
+        <div class="iss-location-card">
+            <h3>🚀 FUTURE ISS LOCATIONS</h3>
+            <p>Predicted using SGP4 orbital calculations</p>
 
-  <div class="iss-location-card">
-    <h3>🚀 FUTURE ISS LOCATIONS</h3>
-    <p>Predicted using SGP4 orbital calculations</p>
+            <div class="future-location">
+                <h4>+10 Minutes</h4>
+                <p>Latitude: <strong id="futureLat10">--</strong></p>
+                <p>Longitude: <strong id="futureLon10">--</strong></p>
+                <p>Altitude: <strong id="futureAlt10">--</strong></p>
+            </div>
 
-    <div class="future-location">
-      <h4>+10 Minutes</h4>
-      <p>Latitude: <strong id="futureLat10">--</strong></p>
-      <p>Longitude: <strong id="futureLon10">--</strong></p>
-      <p>Altitude: <strong id="futureAlt10">--</strong></p>
+            <div class="future-location">
+                <h4>+30 Minutes</h4>
+                <p>Latitude: <strong id="futureLat30">--</strong></p>
+                <p>Longitude: <strong id="futureLon30">--</strong></p>
+                <p>Altitude: <strong id="futureAlt30">--</strong></p>
+            </div>
+
+            <div class="future-location">
+                <h4>+60 Minutes</h4>
+                <p>Latitude: <strong id="futureLat60">--</strong></p>
+                <p>Longitude: <strong id="futureLon60">--</strong></p>
+                <p>Altitude: <strong id="futureAlt60">--</strong></p>
+            </div>
+
+            <div class="future-location">
+                <h4>+90 Minutes</h4>
+                <p>Latitude: <strong id="futureLat90">--</strong></p>
+                <p>Longitude: <strong id="futureLon90">--</strong></p>
+                <p>Altitude: <strong id="futureAlt90">--</strong></p>
+            </div>
+        </div>
+
     </div>
-
-    <div class="future-location">
-      <h4>+30 Minutes</h4>
-      <p>Latitude: <strong id="futureLat30">--</strong></p>
-      <p>Longitude: <strong id="futureLon30">--</strong></p>
-      <p>Altitude: <strong id="futureAlt30">--</strong></p>
-    </div>
-
-    <div class="future-location">
-      <h4>+60 Minutes</h4>
-      <p>Latitude: <strong id="futureLat60">--</strong></p>
-      <p>Longitude: <strong id="futureLon60">--</strong></p>
-      <p>Altitude: <strong id="futureAlt60">--</strong></p>
-    </div>
-
-    <div class="future-location">
-      <h4>+90 Minutes</h4>
-      <p>Latitude: <strong id="futureLat90">--</strong></p>
-      <p>Longitude: <strong id="futureLon90">--</strong></p>
-      <p>Altitude: <strong id="futureAlt90">--</strong></p>
-    </div>
-  </div>
-
-</div>
 
     <!-- LOWER GRID -->
     <section class="lower-grid">
@@ -896,9 +943,9 @@ button { font-family: inherit; cursor: pointer; }
 
             <div class="image-placeholder">
                 <img
-                  src="https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
-                  alt="Blue Marble Earth view"
-                  onerror="this.style.display='none'">
+                    src="https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+                    alt="Blue Marble Earth view"
+                    onerror="this.style.display='none'">
             </div>
             <div class="image-caption">
                 Blue Marble Earth texture · Illustrative globe imagery, not live ISS camera footage.
@@ -957,7 +1004,6 @@ button { font-family: inherit; cursor: pointer; }
 </div>
 
 <script>
-
 /* ==========================================
    ORBITX MISSION CONTROL
 ========================================== */
@@ -971,6 +1017,7 @@ let currentPosition = null;
 let history = [];
 let historyChart;
 let lastTLEUpdate = 0;
+let issErrorLogged = false;
 
 const $ = id => document.getElementById(id);
 
@@ -1125,11 +1172,20 @@ async function loadTLE() {
             throw new Error("Invalid TLE response");
         }
 
-        satelliteRecord = satellite.twoline2satrec(line1, line2);
+        const newRecord = satellite.twoline2satrec(line1, line2);
+
+        if (!newRecord || newRecord.error) {
+            throw new Error("Could not parse ISS orbital elements");
+        }
+
+        satelliteRecord = newRecord;
         lastTLEUpdate = Date.now();
 
         addEvent("Latest ISS orbital elements loaded.");
+
         generateOrbit();
+        updateFutureLocations();
+        updatePredictionSlider($("predictionSlider").value);
 
         return true;
 
@@ -1137,7 +1193,13 @@ async function loadTLE() {
         console.error("TLE error:", error);
         $("globeStatus").textContent =
             "Live position available; TLE prediction unavailable.";
-        addEvent("TLE service unavailable. Future predictions disabled.");
+
+        if (!satelliteRecord) {
+            $("predictionResult").textContent =
+                "Waiting for ISS orbital elements. The TLE service may be offline.";
+        }
+
+        addEvent("TLE service unavailable. Future predictions may be delayed.");
         return false;
     }
 }
@@ -1150,20 +1212,30 @@ async function loadTLE() {
 function getSGP4Position(date) {
     if (!satelliteRecord) return null;
 
-    const result = satellite.propagate(satelliteRecord, date);
+    try {
+        const result = satellite.propagate(satelliteRecord, date);
 
-    if (!result.position || typeof result.position === "boolean") {
+        if (!result.position || typeof result.position === "boolean") {
+            return null;
+        }
+
+        const gmst = satellite.gstime(date);
+        const geo = satellite.eciToGeodetic(result.position, gmst);
+
+        if (!geo) return null;
+
+        const lat = satellite.degreesLat(geo.latitude);
+        const lng = satellite.degreesLong(geo.longitude);
+        const alt = geo.height;
+
+        if (![lat, lng, alt].every(Number.isFinite)) return null;
+
+        return {lat, lng, alt};
+
+    } catch (error) {
+        console.error("SGP4 calculation error:", error);
         return null;
     }
-
-    const gmst = satellite.gstime(date);
-    const geo = satellite.eciToGeodetic(result.position, gmst);
-
-    return {
-        lat: satellite.degreesLat(geo.latitude),
-        lng: satellite.degreesLong(geo.longitude),
-        alt: geo.height
-    };
 }
 
 
@@ -1185,7 +1257,6 @@ function generateOrbit() {
             points.push({
                 lat: position.lat,
                 lng: position.lng,
-                // Approximate ISS altitude above the globe surface.
                 alt: Math.max(0.035, position.alt / 6371)
             });
         }
@@ -1205,24 +1276,37 @@ function generateOrbit() {
 async function fetchISS() {
     try {
         const response = await fetch(ISS_API, {cache: "no-store"});
+
         if (!response.ok) throw new Error("ISS API unavailable");
 
         const data = await response.json();
 
-        currentPosition = {
+        const position = {
             lat: Number(data.latitude),
             lng: Number(data.longitude),
             alt: Number(data.altitude),
             velocity: Number(data.velocity)
         };
 
+        if (!Object.values(position).every(Number.isFinite)) {
+            throw new Error("Invalid ISS position data");
+        }
+
+        currentPosition = position;
+        issErrorLogged = false;
+
         updateDashboard(currentPosition);
 
     } catch (error) {
         console.error("ISS position error:", error);
+
         $("globeStatus").textContent =
             "Waiting for live ISS data service...";
-        addEvent("Live ISS position service unavailable.");
+
+        if (!issErrorLogged) {
+            addEvent("Live ISS position service unavailable.");
+            issErrorLogged = true;
+        }
     }
 }
 
@@ -1237,17 +1321,25 @@ function updateDashboard(position) {
     const alt = position.alt;
     const velocity = position.velocity;
 
-  // CURRENT ISS LOCATION
-$("currentLat").textContent = lat.toFixed(3) + "°";
-$("currentLon").textContent = lng.toFixed(3) + "°";
-$("currentAlt").textContent = alt.toFixed(2) + " km";
-$("currentVelocity").textContent =
-    Math.round(velocity).toLocaleString("en-US") + " km/h";
-$("issUpdated").textContent = new Date().toISOString().slice(11,19) + " UTC";
+    // LIVE TELEMETRY
+    $("altitude").textContent = alt.toFixed(2);
+    $("velocity").textContent = Math.round(velocity).toLocaleString("en-US");
+    $("latitude").textContent = lat.toFixed(3) + "°";
+    $("longitude").textContent = lng.toFixed(3) + "°";
 
+    // CURRENT ISS LOCATION
+    $("currentLat").textContent = lat.toFixed(3) + "°";
+    $("currentLon").textContent = lng.toFixed(3) + "°";
+    $("currentAlt").textContent = alt.toFixed(2) + " km";
+    $("currentVelocity").textContent =
+        Math.round(velocity).toLocaleString("en-US") + " km/h";
+
+    const updatedTime = new Date().toISOString().slice(11,19) + " UTC";
+
+    $("issUpdated").textContent = updatedTime;
     $("snapshotAltitude").textContent = alt.toFixed(2) + " km";
     $("snapshotVelocity").textContent = Math.round(velocity) + " km/h";
-    $("snapshotTime").textContent = new Date().toLocaleTimeString();
+    $("snapshotTime").textContent = updatedTime;
 
     $("locationText").textContent =
         "Current sub-satellite coordinates updated.";
@@ -1269,7 +1361,7 @@ $("issUpdated").textContent = new Date().toISOString().slice(11,19) + " UTC";
     updateHealth();
 
     $("globeStatus").textContent =
-        "LIVE POSITION · " + new Date().toISOString().slice(11,19) + " UTC";
+        "LIVE POSITION · " + updatedTime;
 }
 
 
@@ -1286,14 +1378,15 @@ function recordHistory(position) {
         longitude: position.lng
     });
 
-    // Keep the latest 500 records in this browser session.
     if (history.length > 500) history.shift();
 
     $("readingCount").textContent = history.length;
 
     const minutes = history.length > 1
-        ? Math.round((Date.parse(history[history.length-1].time) -
-                      Date.parse(history[0].time)) / 60000)
+        ? Math.round(
+            (Date.parse(history[history.length-1].time) -
+             Date.parse(history[0].time)) / 60000
+          )
         : 0;
 
     $("historyDuration").textContent = minutes + " min";
@@ -1363,28 +1456,29 @@ function updateHistoryChart() {
 
 
 /* ==========================================
-   FUTURE EARTH PREDICTION
+   INTERACTIVE FUTURE EARTH SLIDER
 ========================================== */
 
-function predict(minutes, button) {
-    document.querySelectorAll(".prediction-buttons .action-btn")
-        .forEach(btn => btn.classList.remove("selected"));
+function updatePredictionSlider(value) {
+    const minutes = Number(value);
 
-    button.classList.add("selected");
+    $("predictionMinutes").textContent = minutes + " MIN";
 
     if (!satelliteRecord) {
-        $("predictionResult").innerHTML =
-            "<strong>Prediction unavailable.</strong><br>" +
-            "Waiting for current TLE orbital elements.";
+        $("predictionResult").textContent =
+            "Waiting for current ISS orbital elements (TLE)...";
         return;
     }
 
-    const futureDate = new Date(Date.now() + minutes * 60000);
+    const futureDate = new Date(
+        Date.now() + minutes * 60 * 1000
+    );
+
     const result = getSGP4Position(futureDate);
 
     if (!result) {
         $("predictionResult").textContent =
-            "Unable to calculate this future position.";
+            "Unable to calculate this future position. Please try again.";
         return;
     }
 
@@ -1395,23 +1489,22 @@ function predict(minutes, button) {
         ALTITUDE: ${result.alt.toFixed(2)} km<br>
         PREDICTED TIME: ${futureDate.toUTCString()}
     `;
-
-    addEvent("Future position calculated: +" + minutes + " minutes.");
 }
 
-/* FUTURE ISS LOCATION CARDS */
+
+/* ==========================================
+   FUTURE ISS LOCATION CARDS
+========================================== */
 
 function updateFutureLocations() {
-
     if (!satelliteRecord) return;
 
-    const now = new Date();
+    const now = Date.now();
     const predictionTimes = [10, 30, 60, 90];
 
     predictionTimes.forEach(minutes => {
-
         const futureDate = new Date(
-            now.getTime() + minutes * 60000
+            now + minutes * 60000
         );
 
         const position = getSGP4Position(futureDate);
@@ -1428,38 +1521,46 @@ function updateFutureLocations() {
             position.alt.toFixed(2) + " km";
     });
 }
-    
+
+
 /* ==========================================
    DAY / NIGHT CALCULATION
 ========================================== */
 
 function updateDayNight(lat, lng) {
     const now = new Date();
-    const day = Math.floor(
-        (Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) -
-         Date.UTC(now.getUTCFullYear(), 0, 0)) / 86400000
+
+    const startOfYear = Date.UTC(
+        now.getUTCFullYear(), 0, 0
     );
 
-    // Approximate solar declination.
+    const day = Math.floor(
+        (Date.UTC(
+            now.getUTCFullYear(),
+            now.getUTCMonth(),
+            now.getUTCDate()
+        ) - startOfYear) / 86400000
+    );
+
     const declination =
         23.44 * Math.sin((2 * Math.PI / 365) * (day - 81));
 
-    // Approximate subsolar longitude from UTC.
     const utcHours = now.getUTCHours() +
         now.getUTCMinutes() / 60 +
         now.getUTCSeconds() / 3600;
 
-    const subsolarLongitude = ((180 - utcHours * 15 + 540) % 360) - 180;
+    const subsolarLongitude =
+        ((180 - utcHours * 15 + 540) % 360) - 180;
 
-    // Approximate local solar time at the ISS longitude.
     let localHours = (utcHours + lng / 15 + 24) % 24;
+
     const hh = Math.floor(localHours);
     const mm = Math.floor((localHours - hh) * 60);
 
-    // Estimate solar elevation using spherical geometry.
     const latRad = lat * Math.PI / 180;
     const decRad = declination * Math.PI / 180;
-    const hourAngle = (lng - subsolarLongitude) * Math.PI / 180;
+    const hourAngle =
+        (lng - subsolarLongitude) * Math.PI / 180;
 
     const sinElevation =
         Math.sin(latRad) * Math.sin(decRad) +
@@ -1470,10 +1571,13 @@ function updateDayNight(lat, lng) {
     ) * 180 / Math.PI;
 
     $("declination").textContent = declination.toFixed(2) + "°";
-    $("subsolar").textContent = declination.toFixed(2) + "°";
+    $("subsolar").textContent =
+        subsolarLongitude.toFixed(2) + "°";
+
     $("solarTime").textContent =
         String(hh).padStart(2,"0") + ":" +
         String(mm).padStart(2,"0") + " UTC-adjusted";
+
     $("illumination").textContent =
         elevation > 0 ? "DAY SIDE" : "NIGHT SIDE";
 }
@@ -1492,6 +1596,7 @@ function updateHealth() {
     }
 
     const values = history.map(item => item.altitude);
+
     const mean = values.reduce((a,b) => a+b, 0) / values.length;
 
     const variance = values.reduce(
@@ -1509,11 +1614,13 @@ function updateHealth() {
     if (Math.abs(z) >= 3) {
         $("healthStatus").textContent = "● UNUSUAL ALTITUDE READING";
         $("healthStatus").style.color = "var(--red)";
+
         $("healthDescription").textContent =
             "The latest altitude differs significantly from the collected history. This is a statistical alert, not confirmation of a spacecraft fault.";
     } else {
         $("healthStatus").textContent = "● NOMINAL STATISTICAL STATUS";
         $("healthStatus").style.color = "var(--green)";
+
         $("healthDescription").textContent =
             "No unusual altitude reading detected in the current collected data.";
     }
@@ -1550,7 +1657,11 @@ function exportCSV() {
         .map(row => row.join(","))
         .join("\n");
 
-    downloadFile(csv, "ORBITX_Orbital_History.csv", "text/csv");
+    downloadFile(
+        csv,
+        "ORBITX_Orbital_History.csv",
+        "text/csv"
+    );
 
     addEvent("Orbital history exported as CSV.");
 }
@@ -1566,13 +1677,19 @@ function clearHistory() {
     }
 
     history = [];
+
     $("readingCount").textContent = "0";
     $("historyDuration").textContent = "0 min";
+
     updateHistoryChart();
+
     $("meanAltitude").textContent = "--";
     $("latestAltitude").textContent = "--";
     $("zScore").textContent = "--";
+
     $("healthStatus").textContent = "● COLLECTING DATA";
+    $("healthStatus").style.color = "var(--green)";
+
     $("healthDescription").textContent =
         "History cleared. Collecting new orbital readings.";
 
@@ -1591,7 +1708,9 @@ function downloadSnapshot() {
         generated_at: new Date().toISOString(),
         live_position: currentPosition,
         latest_history: history.slice(-20),
-        prediction_source: satelliteRecord ? "SGP4 / TLE" : "Unavailable",
+        prediction_source: satelliteRecord
+            ? "SGP4 / TLE"
+            : "Unavailable",
         history_count: history.length
     };
 
@@ -1616,9 +1735,11 @@ function downloadFile(content, filename, type) {
 
     link.href = url;
     link.download = filename;
+    document.body.appendChild(link);
     link.click();
+    link.remove();
 
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 
@@ -1635,15 +1756,18 @@ async function startORBITX() {
     await loadTLE();
     await fetchISS();
 
-    // Refresh live ISS position every 5 seconds.
+    // Update live ISS telemetry every 5 seconds.
     setInterval(fetchISS, 5000);
 
-    // Refresh the TLE periodically.
+    // Update future location cards every minute.
+    setInterval(updateFutureLocations, 60000);
+
+    // Refresh orbital elements every 30 minutes.
     setInterval(async () => {
         await loadTLE();
     }, 30 * 60 * 1000);
 
-    // Recalculate the predicted orbital path periodically.
+    // Refresh the predicted orbital path every minute.
     setInterval(generateOrbit, 60000);
 }
 
